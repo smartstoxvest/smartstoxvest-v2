@@ -97,16 +97,28 @@ const ShortTerm = () => {
                 {results.map((res) => (
                   <tr key={res.symbol} className="border-t">
                     <td className="p-2 font-semibold">{res.symbol}</td>
-                    <td className="p-2">${res.current_price}</td>
-                    <td className="p-2">${res.predicted_price}</td>
-                    <td className="p-2">{res.rsi}</td>
-                    <td className="p-2">{res.volatility}</td>
-                    <td className="p-2">${res.stop_loss} / ${res.take_profit}</td>
-                    <td className="p-2">{res.decision}</td>
-                    <td className="p-2">{res.news_sentiment}</td>
-                    <td className="p-2">{res.final_decision}</td>
+
+                    {"error" in res ? (
+                      <>
+                        <td colSpan={8} className="p-2 text-red-600 italic">
+                          ⚠️ {res.error}
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="p-2">${res.current_price}</td>
+                        <td className="p-2">${res.predicted_price}</td>
+                        <td className="p-2">{res.rsi}</td>
+                        <td className="p-2">{res.volatility}</td>
+                        <td className="p-2">${res.stop_loss} / ${res.take_profit}</td>
+                        <td className="p-2">{res.decision}</td>
+                        <td className="p-2">{res.news_sentiment}</td>
+                        <td className="p-2">{res.final_decision}</td>
+                      </>
+                    )}
                   </tr>
                 ))}
+
               </tbody>
             </table>
           </div>
