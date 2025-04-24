@@ -1,14 +1,16 @@
-import logging
-import numpy as np
-import pandas as pd
 from fastapi import APIRouter, Query
+from fastapi.responses import JSONResponse
 from services.fetch_utils import fetch_stock_data
 from services.short_term_service import compute_short_term_signals
 
 router = APIRouter()
 
 @router.get("/api/short-term-predict")
-def short_term_predict(symbols: str = Query(...), exchange: str = Query("NASDAQ"), period: str = Query("1y")):
+def short_term_predict(
+    symbols: str = Query(..., description="Comma-separated tickers"),
+    exchange: str = Query("NASDAQ", description="Exchange (e.g. NASDAQ)"),
+    period: str = Query("1y", description="Period for analysis (e.g. 1y, 6mo)")
+):
     try:
         symbol_list = [s.strip().upper() for s in symbols.split(",") if s.strip()]
         results = []
@@ -19,26 +21,16 @@ def short_term_predict(symbols: str = Query(...), exchange: str = Query("NASDAQ"
                 results.append({"symbol": symbol, "error": "No data found"})
                 continue
 
-            try:
-                analysis = compute_short_term_signals(stock_data)
-            except Exception as e:
-                results.append({"symbol": symbol, "error": f"Analysis failed: {str(e)}"})
-                continue
+            analysis = compute_short_term_signals(stock_data)
 
-            if not isinstance(analysis, dict) or "error" in analysis:
+            if "error" in analysis:
                 results.append({"symbol": symbol, **analysis})
-                continue
-
-            try:
-                last_close = stock_data['Close'].dropna().iloc[-1]
-            except Exception as e:
-                results.append({"symbol": symbol, "error": f"Failed to get last close price: {str(e)}"})
                 continue
 
             results.append({
                 "symbol": symbol,
-                "current_price": round(last_close, 2),
-                "predicted_price": round(last_close * 1.02, 2),
+                "current_price": round(stock_data['Close'].iloc[-1], 2),
+                "predicted_price": round(stock_data['Close'].iloc[-1] * 1.02, 2),
                 "rsi": analysis["rsi"],
                 "volatility": analysis["volatility"],
                 "decision": analysis["decision"],
@@ -50,4 +42,4 @@ def short_term_predict(symbols: str = Query(...), exchange: str = Query("NASDAQ"
 
         return results
     except Exception as e:
-        return {"error": str(e)}
+        return JSONResponse(status_code=500, content={"error": str(e)})
