@@ -20,7 +20,8 @@ def short_term_predict(symbols: str = Query(...), exchange: str = Query("NASDAQ"
                 continue
 
             analysis = compute_short_term_signals(stock_data)
-            if "error" in analysis:
+
+            if not isinstance(analysis, dict) or "error" in analysis:
                 results.append({"symbol": symbol, **analysis})
                 continue
 
