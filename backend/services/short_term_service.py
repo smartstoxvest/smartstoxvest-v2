@@ -3,44 +3,29 @@ import numpy as np
 import pandas as pd
 
 def compute_short_term_signals(stock_data):
-    """
-    Computes short-term trading signals using RSI and Volatility
-    derived directly from stock_data.
-    """
     try:
-        close_prices = pd.Series(stock_data['Close'])
-
-        # RSI calculation
-        delta = close_prices.diff()
-        gain = delta.where(delta > 0, 0).rolling(14).mean()
-        loss = -delta.where(delta < 0, 0).rolling(14).mean()
-        rs = gain / loss
+        # Calculate RSI
+        delta = stock_data["Close"].diff()
+        gain = delta.where(delta > 0, 0)
+        loss = -delta.where(delta < 0, 0)
+        avg_gain = gain.rolling(window=14).mean()
+        avg_loss = loss.rolling(window=14).mean()
+        rs = avg_gain / avg_loss
         rsi = 100 - (100 / (1 + rs))
-        rsi_value = rsi.iloc[-1]
 
-        # Volatility calculation
-        volatility = close_prices.pct_change().rolling(14).std().iloc[-1]
+        # Calculate volatility
+        log_returns = np.log(stock_data["Close"] / stock_data["Close"].shift(1))
+        volatility = log_returns.rolling(window=14).std() * np.sqrt(252)
 
-        # Log calculated values
-        logging.warning(f"🧪 Calculated RSI: {rsi_value}, Volatility: {volatility}")
-
-        # Decision logic
-        if rsi_value < 30:
-            decision = "Buy"
-            confidence_score = 0.9
-        elif rsi_value > 70:
-            decision = "Sell"
-            confidence_score = 0.9
-        else:
-            decision = "Hold"
-            confidence_score = 0.5
+        # Simple prediction logic (for demo)
+        decision = "Buy" if rsi.iloc[-1] < 30 else "Sell" if rsi.iloc[-1] > 70 else "Hold"
+        confidence_score = round(1 - abs(rsi.iloc[-1] - 50) / 50, 2)
 
         return {
-            "rsi": round(rsi_value, 2),
-            "volatility": round(volatility, 4),
+            "rsi": round(rsi.iloc[-1], 2),
+            "volatility": round(volatility.iloc[-1], 4),
             "decision": decision,
             "confidence_score": confidence_score
         }
-
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": f"Failed to compute indicators: {str(e)}"}
