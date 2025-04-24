@@ -20,6 +20,7 @@ def short_term_predict(
             if stock_data is None or stock_data.empty:
                 results.append({"symbol": symbol, "error": "No data found"})
                 continue
+            print(f"{symbol} data preview:\n{stock_data[['Close']].tail()}")
 
             analysis = compute_short_term_signals(stock_data)
 
