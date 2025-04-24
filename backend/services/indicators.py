@@ -20,10 +20,18 @@ def compute_short_term_signals(symbols, exchange, risk_tolerance):
         data = calculate_rsi(data)
         data['Volatility'] = data['Close'].pct_change().rolling(14).std()
 
-        current_price = data['Close'].iloc[-1]
-        predicted_price = current_price * 1.02  # Simple +2% model
-        rsi = data['RSI'].iloc[-1]
-        volatility = data['Volatility'].iloc[-1]
+        
+        if data['RSI'].dropna().empty or data['Volatility'].dropna().empty or data['Close'].dropna().empty:
+            results.append({
+                "symbol": symbol,
+                "error": "Failed to compute indicators: Missing RSI, Volatility or Close values."
+            })
+            continue
+
+        rsi = data['RSI'].dropna().iloc[-1]
+        volatility = data['Volatility'].dropna().iloc[-1]
+        current_price = data['Close'].dropna().iloc[-1]
+
 
         # Stop-loss & Take-profit
         atr_data = calculate_atr(data)
