@@ -4,16 +4,17 @@ import { Button } from "@/components/ui/button";
 
 interface ShortTermResult {
   symbol: string;
-  current_price: number;
-  predicted_price: number;
-  rsi: number;
-  volatility: number;
-  stop_loss: number;
-  take_profit: number;
-  decision: string;
-  news_sentiment: string;
-  final_decision: string;
-  signal_conflict: string;
+  error?: string;
+  current_price?: number;
+  predicted_price?: number;
+  rsi?: number;
+  volatility?: number;
+  stop_loss?: number;
+  take_profit?: number;
+  decision?: string;
+  news_sentiment?: string;
+  final_decision?: string;
+  signal_conflict?: string;
 }
 
 const ShortTerm = () => {
