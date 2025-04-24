@@ -29,10 +29,16 @@ def short_term_predict(symbols: str = Query(...), exchange: str = Query("NASDAQ"
                 results.append({"symbol": symbol, **analysis})
                 continue
 
+            try:
+                last_close = stock_data['Close'].dropna().iloc[-1]
+            except Exception as e:
+                results.append({"symbol": symbol, "error": f"Failed to get last close price: {str(e)}"})
+                continue
+
             results.append({
                 "symbol": symbol,
-                "current_price": round(stock_data['Close'].iloc[-1], 2),
-                "predicted_price": round(stock_data['Close'].iloc[-1] * 1.02, 2),
+                "current_price": round(last_close, 2),
+                "predicted_price": round(last_close * 1.02, 2),
                 "rsi": analysis["rsi"],
                 "volatility": analysis["volatility"],
                 "decision": analysis["decision"],
