@@ -19,7 +19,11 @@ def short_term_predict(symbols: str = Query(...), exchange: str = Query("NASDAQ"
                 results.append({"symbol": symbol, "error": "No data found"})
                 continue
 
-            analysis = compute_short_term_signals(stock_data)
+            try:
+                analysis = compute_short_term_signals(stock_data)
+            except Exception as e:
+                results.append({"symbol": symbol, "error": f"Analysis failed: {str(e)}"})
+                continue
 
             if not isinstance(analysis, dict) or "error" in analysis:
                 results.append({"symbol": symbol, **analysis})
