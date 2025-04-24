@@ -3,7 +3,10 @@ def compute_short_term_signals(stock_data, rsi, volatility):
     Dummy implementation for computing short-term trading signals.
     Replace this logic with real technical indicator-based analysis.
     """
-    # Example logic (can be replaced with SMA/EMA crossover, MACD, etc.)
+    # ✅ Ensure numeric comparison
+    rsi = float(rsi)
+    volatility = float(volatility)
+
     if rsi < 30:
         decision = "Buy"
         confidence_score = 0.9
