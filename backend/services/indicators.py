@@ -19,7 +19,6 @@ def compute_short_term_signals(symbols, exchange, risk_tolerance):
             results.append({"symbol": symbol, "error": "No data found"})
             continue
 
-        # Indicators
         if len(data['Close'].dropna()) < 20:
             results.append({
                 "symbol": symbol,
@@ -32,7 +31,6 @@ def compute_short_term_signals(symbols, exchange, risk_tolerance):
         data = calculate_rsi(data, window=14)
         data['Volatility'] = data['Close'].pct_change().rolling(14).std()
 
-        # Use most recent non-NaN values
         rsi_series = data['RSI'].dropna()
         vol_series = data['Volatility'].dropna()
         close_series = data['Close'].dropna()
@@ -50,19 +48,13 @@ def compute_short_term_signals(symbols, exchange, risk_tolerance):
         rsi = rsi_series.iloc[-1]
         volatility = vol_series.iloc[-1]
         current_price = close_series.iloc[-1]
-
-        rsi = data['RSI'].dropna().iloc[-1]
-        volatility = data['Volatility'].dropna().iloc[-1]
-        current_price = data['Close'].dropna().iloc[-1]
         predicted_price = current_price * 1.02  # Placeholder +2% model
 
-        # Stop-loss & Take-profit
         atr_data = calculate_atr(data)
         atr = atr_data['ATR'].iloc[-1]
         stop_loss = current_price - (atr * 1.5 * (2 - risk_tolerance))
         take_profit = current_price + (atr * 2.5 * risk_tolerance)
 
-        # Signal Logic
         if predicted_price > current_price:
             if rsi < 30:
                 decision = "✅ Invest (Buy Opportunity)"
@@ -73,22 +65,10 @@ def compute_short_term_signals(symbols, exchange, risk_tolerance):
         else:
             decision = "❌ Avoid"
 
-        # News Sentiment
         news_decision, sentiment = get_news_decision(symbol)
 
-        # Combine Scoring
-        tech_score = {
-            "Invest": 7,
-            "Invest (Buy Opportunity)": 9,
-            "Hold (Overbought)": 4,
-            "Hold": 3,
-            "Avoid": 1
-        }
-        news_score = {
-            "Positive News - Consider Buying": 8,
-            "Neutral News - Hold": 5,
-            "Negative News - Consider Selling": 2
-        }
+        tech_score = {"Invest": 7, "Invest (Buy Opportunity)": 9, "Hold (Overbought)": 4, "Hold": 3, "Avoid": 1}
+        news_score = {"Positive News - Consider Buying": 8, "Neutral News - Hold": 5, "Negative News - Consider Selling": 2}
 
         tech_clean = clean_decision_text(decision)
         news_clean = clean_decision_text(news_decision)
