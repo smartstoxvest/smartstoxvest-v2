@@ -1,7 +1,7 @@
 import yfinance as yf
 import numpy as np
 import pandas as pd
-from backend.services.fetch_data import fetch_stock_data
+from backend.services.fetch_utils import fetch_stock_data
 from backend.services.indicators import calculate_rsi, calculate_atr
 from backend.services.sentiment import get_news_decision, clean_decision_text
 
