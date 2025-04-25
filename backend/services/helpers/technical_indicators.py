@@ -16,7 +16,7 @@ def calculate_rsi(data, window=14):
     rs = avg_gain / avg_loss
     rsi = 100 - (100 / (1 + rs))
 
-    data['RSI'] = pd.Series(rsi).fillna(method='bfill')
+    data['RSI'] = pd.Series(rsi).bfill()
     return data
 
 def calculate_atr(data, window=14):
