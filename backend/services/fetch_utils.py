@@ -5,12 +5,16 @@ def fetch_stock_data(symbol: str, period: str = "1y", exchange: str = "NASDAQ") 
     try:
         full_symbol = f"{symbol}" if exchange.upper() in ["NASDAQ", "NYSE"] else f"{symbol}.{exchange.upper()}"
         print(f"[DEBUG] Downloading: {full_symbol}, Period: {period}")
-        data = yf.download(full_symbol, period="3mo", progress=False)
+        data = yf.download(tickers=full_symbol, period=period, progress=False, group_by="column")
 
         # Flatten MultiIndex if present
         if isinstance(data.columns, pd.MultiIndex):
-                print(f"[DEBUG] Flattening multi-level columns for {symbol}")
-                data.columns = data.columns.get_level_values(1)
+            print(f"[DEBUG] MultiIndex detected for {symbol}, selecting sub-columns")
+            if symbol in data.columns.get_level_values(0):
+                data = data[symbol]
+            else:
+                print(f"[DEBUG] Symbol {symbol} not found in returned data columns")
+                return pd.DataFrame()
             
         # Ensure DataFrame is valid and has the expected structure
         
