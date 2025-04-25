@@ -20,9 +20,16 @@ def compute_short_term_signals(symbols, exchange, risk_tolerance):
             continue
 
         # Indicators
+        # Replace your current RSI and Volatility calculation with this:
+        if len(data['Close'].dropna()) < 20:
+            results.append({
+                "symbol": symbol,
+                "error": "Not enough data to compute indicators (need at least 20 days)."
+            })
+            continue
         data['SMA50'] = data['Close'].rolling(window=50).mean()
         data['SMA200'] = data['Close'].rolling(window=200).mean()
-        data = calculate_rsi(data)
+        data = calculate_rsi(data, window=14)
         data['Volatility'] = data['Close'].pct_change().rolling(14).std()
 
         if data['RSI'].dropna().empty or data['Volatility'].dropna().empty or data['Close'].dropna().empty:
