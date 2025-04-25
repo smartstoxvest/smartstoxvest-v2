@@ -11,13 +11,14 @@ def calculate_rsi(data, window=14):
     avg_gain = pd.Series(gain).rolling(window=window, min_periods=1).mean()
     avg_loss = pd.Series(loss).rolling(window=window, min_periods=1).mean()
 
-    # Avoid division by zero
     avg_loss = np.where(avg_loss == 0, np.nan, avg_loss)
     rs = avg_gain / avg_loss
     rsi = 100 - (100 / (1 + rs))
 
-    data['RSI'] = pd.Series(rsi).bfill()
+    # Robust filling: forward fill then backfill remaining
+    data['RSI'] = pd.Series(rsi).ffill().bfill()
     return data
+
 
 def calculate_atr(data, window=14):
     high_low = data['High'] - data['Low']
