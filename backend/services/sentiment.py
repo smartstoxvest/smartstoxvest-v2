@@ -1,36 +1,37 @@
-from textblob import TextBlob
+import os
 import requests
-import re
+from textblob import TextBlob
 
 def fetch_news(stock):
-    url = f"https://newsapi.org/v2/everything?q={stock}&sortBy=publishedAt&apiKey=YOUR_NEWS_API_KEY"
-    response = requests.get(url)
-    articles = response.json().get("articles", [])
-    return articles[:5]
+    api_key = os.getenv("NEWS_API_KEY")
+    if not api_key:
+        return []
+
+    url = f"https://newsapi.org/v2/everything?q={stock}&sortBy=publishedAt&apiKey={api_key}"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        articles = response.json().get("articles", [])
+        return articles[:5]
+    except Exception as e:
+        print(f"⚠️ Failed to fetch news for {stock}: {e}")
+        return []
 
 def analyze_sentiment(text):
-    blob = TextBlob(text)
-    return blob.sentiment.polarity
+    return TextBlob(text).sentiment.polarity
 
 def get_news_decision(stock):
     articles = fetch_news(stock)
-    sentiment_scores = [
-        analyze_sentiment((article.get('title') or '') + " " + (article.get('description') or ''))
-        for article in articles
-    ]
+    scores = [analyze_sentiment((a.get("title") or "") + " " + (a.get("description") or "")) for a in articles]
+    avg_score = sum(scores) / len(scores) if scores else 0
 
-    avg_sentiment = sum(sentiment_scores) / len(sentiment_scores) if sentiment_scores else 0
-
-    if avg_sentiment > 0.15:
-        return "🟢 Positive News - Consider Buying", avg_sentiment
-    elif avg_sentiment < -0.15:
-        return "🔴 Negative News - Consider Selling", avg_sentiment
+    if avg_score > 0.15:
+        return "🟢 Positive News - Consider Buying", avg_score
+    elif avg_score < -0.15:
+        return "🔴 Negative News - Consider Selling", avg_score
     else:
-        return "🟡 Neutral News - Hold", avg_sentiment
+        return "🟡 Neutral News - Hold", avg_score
 
 def clean_decision_text(text):
-    if not isinstance(text, str):
-        return ""
-    text = re.sub(r"[^\w\s()\-]", "", text)
-    text = text.replace("\n", " ").strip()
-    return text
+    import re
+    return re.sub(r"[^\w\s()-]", "", text).strip().lower()
