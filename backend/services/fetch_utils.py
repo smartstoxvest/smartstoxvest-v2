@@ -29,10 +29,16 @@ def fetch_stock_data(symbol: str, period: str = "1y", exchange: str = "NASDAQ") 
         if isinstance(data.columns, pd.MultiIndex):
             print(f"[DEBUG] Flattening MultiIndex columns for {symbol}")
             try:
-                data = data.droplevel(0, axis=1)
+                data.columns = data.columns.get_level_values(1)
             except Exception as e:
-                print(f"[ERROR] Failed to flatten columns for {symbol}: {e}")
+                print(f"[ERROR] Could not flatten columns: {e}")
                 return pd.DataFrame()
+
+        # 🔒 Extra protection: fix bad headers if they all equal the symbol
+        if all(col == stock_with_suffix for col in data.columns):
+            print(f"[DEBUG] All column names match symbol ({stock_with_suffix}). Attempting to reset headers.")
+            data.columns = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+
 
         if "Close" not in data.columns:
             print(f"[DEBUG] 'Close' column missing for {symbol}, columns: {data.columns}")
