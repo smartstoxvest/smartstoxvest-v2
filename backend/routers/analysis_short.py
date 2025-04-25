@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Query
+from backend.services.indicators import compute_short_term_signals
 from backend.services.data_service import fetch_stock_data
 from backend.services.indicators import calculate_rsi, calculate_atr
 from backend.services.sentiment import get_news_decision, clean_decision_text
