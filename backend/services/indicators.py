@@ -20,19 +20,19 @@ def compute_short_term_signals(symbols, exchange, risk_tolerance):
             continue
 
         # Indicators
-        # Replace your current RSI and Volatility calculation with this:
         if len(data['Close'].dropna()) < 20:
             results.append({
                 "symbol": symbol,
                 "error": "Not enough data to compute indicators (need at least 20 days)."
             })
             continue
+
         data['SMA50'] = data['Close'].rolling(window=50).mean()
         data['SMA200'] = data['Close'].rolling(window=200).mean()
         data = calculate_rsi(data, window=14)
         data['Volatility'] = data['Close'].pct_change().rolling(14).std()
 
-         if data['RSI'].isna().sum() > len(data) * 0.9 or \
+        if data['RSI'].isna().sum() > len(data) * 0.9 or \
            data['Volatility'].isna().sum() > len(data) * 0.9 or \
            data['Close'].isna().sum() > len(data) * 0.9:
             print(f"[DEBUG] RSI tail for {symbol}: {data['RSI'].tail()}")
@@ -43,7 +43,6 @@ def compute_short_term_signals(symbols, exchange, risk_tolerance):
                 "error": "Failed to compute indicators: Too many missing RSI, Volatility or Close values."
             })
             continue
-
 
         rsi = data['RSI'].dropna().iloc[-1]
         volatility = data['Volatility'].dropna().iloc[-1]
@@ -71,8 +70,18 @@ def compute_short_term_signals(symbols, exchange, risk_tolerance):
         news_decision, sentiment = get_news_decision(symbol)
 
         # Combine Scoring
-        tech_score = {"Invest": 7, "Invest (Buy Opportunity)": 9, "Hold (Overbought)": 4, "Hold": 3, "Avoid": 1}
-        news_score = {"Positive News - Consider Buying": 8, "Neutral News - Hold": 5, "Negative News - Consider Selling": 2}
+        tech_score = {
+            "Invest": 7,
+            "Invest (Buy Opportunity)": 9,
+            "Hold (Overbought)": 4,
+            "Hold": 3,
+            "Avoid": 1
+        }
+        news_score = {
+            "Positive News - Consider Buying": 8,
+            "Neutral News - Hold": 5,
+            "Negative News - Consider Selling": 2
+        }
 
         tech_clean = clean_decision_text(decision)
         news_clean = clean_decision_text(news_decision)
