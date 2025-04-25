@@ -27,14 +27,20 @@ const MediumTerm = () => {
 
     for (const symbol of symbols) {
       try {
-        const res = await axios.get(`http://localhost:8000/api/lstm-predict?symbol=${symbol}`);
+        const res = await axios.post(`http://localhost:8000/api/medium/predict`, {
+          symbol,
+          exchange: "NASDAQ", // or whatever the user selects — hardcoded for now
+          period: "2y",
+          epochs: 5,
+          future_days: 30,
+        });
         console.log(`📦 Response for ${symbol}:`, res.data);
 
         newResults[symbol] = {
-          predictedPrice: res.data.predicted_price ?? 205,
+          predictedPrice: res.data.end_price ?? 205,
           chartBase64: res.data.chart_base64,
-          confidenceLow: res.data.confidence_low ?? 195,
-          confidenceHigh: res.data.confidence_high ?? 215,
+          confidenceLow: res.data.lower_bounds?.[res.data.lower_bounds.length - 1] ?? 195,
+          confidenceHigh: res.data.upper_bounds?.[res.data.upper_bounds.length - 1] ?? 215,
           recommendation: res.data.recommendation ?? "Hold",
         };
       } catch (err) {
