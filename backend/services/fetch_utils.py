@@ -7,7 +7,13 @@ def fetch_stock_data(symbol: str, period: str = "1y", exchange: str = "NASDAQ") 
         print(f"[DEBUG] Downloading: {full_symbol}, Period: {period}")
         data = yf.download(full_symbol, period="3mo", progress=False)
 
+        # Flatten MultiIndex if present
+        if isinstance(data.columns, pd.MultiIndex):
+                print(f"[DEBUG] Flattening multi-level columns for {symbol}")
+                data.columns = data.columns.get_level_values(1)
+            
         # Ensure DataFrame is valid and has the expected structure
+        
         if data is None or data.empty:
             
             print(f"[DEBUG] No data returned for {symbol}")
