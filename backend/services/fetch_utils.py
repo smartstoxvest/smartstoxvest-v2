@@ -13,7 +13,10 @@ exchange_suffix = {
 def fetch_stock_data(symbol: str, period: str = "1y", exchange: str = "NASDAQ") -> pd.DataFrame:
     try:
         # Apply suffix mapping like in Streamlit
+        
         stock_with_suffix = symbol + exchange_suffix.get(exchange.upper(), "")
+        print(f"[DEBUG] Final ticker for yfinance download: {stock_with_suffix}")
+
         print(f"[DEBUG] Downloading: {stock_with_suffix}, Period: {period}")
 
         data = yf.download(stock_with_suffix, period=period, progress=False)
