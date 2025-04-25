@@ -5,30 +5,23 @@ def fetch_stock_data(symbol: str, period: str = "1y", exchange: str = "NASDAQ") 
     try:
         full_symbol = f"{symbol}" if exchange.upper() in ["NASDAQ", "NYSE"] else f"{symbol}.{exchange.upper()}"
         print(f"[DEBUG] Downloading: {full_symbol}, Period: {period}")
-        data = yf.download(tickers=full_symbol, period=period, progress=False, group_by="column")
 
-        # Flatten MultiIndex if present
-        if isinstance(data.columns, pd.MultiIndex):
-            print(f"[DEBUG] MultiIndex detected for {symbol}, selecting sub-columns")
-            if symbol in data.columns.get_level_values(0):
-                data = data[symbol]
-            else:
-                print(f"[DEBUG] Symbol {symbol} not found in returned data columns")
-                return pd.DataFrame()
-            
-        # Ensure DataFrame is valid and has the expected structure
-        
+        data = yf.download(tickers=full_symbol, period=period, progress=False)
+
         if data is None or data.empty:
-            
             print(f"[DEBUG] No data returned for {symbol}")
             return pd.DataFrame()
+
+        if isinstance(data.columns, pd.MultiIndex):
+            print(f"[DEBUG] MultiIndex detected. Flattening to use only second level.")
+            data.columns = data.columns.get_level_values(1)
 
         if "Close" not in data.columns:
             print(f"[DEBUG] 'Close' column missing for {symbol}, columns found: {data.columns}")
             return pd.DataFrame()
-        print(f"[DEBUG] Data sample for {symbol}:\n{data.head()}")
-        data = data.dropna(subset=["Close"])  # Remove rows where Close is NaN
 
+        data = data.dropna(subset=["Close"])
+        print(f"[DEBUG] Data sample for {symbol}:\n{data.head()}")
         return data
 
     except Exception as e:
