@@ -32,9 +32,12 @@ def compute_short_term_signals(symbols, exchange, risk_tolerance):
         data = calculate_rsi(data, window=14)
         data['Volatility'] = data['Close'].pct_change().rolling(14).std()
 
-        if data['RSI'].tail(5).isna().all() or \
-           data['Volatility'].tail(5).isna().all() or \
-           data['Close'].tail(5).isna().all():
+        # Use most recent non-NaN values
+        rsi_series = data['RSI'].dropna()
+        vol_series = data['Volatility'].dropna()
+        close_series = data['Close'].dropna()
+
+        if rsi_series.empty or vol_series.empty or close_series.empty:
             print(f"[DEBUG] RSI tail for {symbol}: {data['RSI'].tail()}")
             print(f"[DEBUG] Volatility tail for {symbol}: {data['Volatility'].tail()}")
             print(f"[DEBUG] Close tail for {symbol}: {data['Close'].tail()}")
@@ -43,6 +46,10 @@ def compute_short_term_signals(symbols, exchange, risk_tolerance):
                 "error": "Failed to compute indicators: Too many missing RSI, Volatility or Close values."
             })
             continue
+
+        rsi = rsi_series.iloc[-1]
+        volatility = vol_series.iloc[-1]
+        current_price = close_series.iloc[-1]
 
         rsi = data['RSI'].dropna().iloc[-1]
         volatility = data['Volatility'].dropna().iloc[-1]
