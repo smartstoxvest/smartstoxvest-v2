@@ -34,10 +34,25 @@ def fetch_stock_data(symbol: str, period: str = "1y", exchange: str = "NASDAQ") 
                 print(f"[ERROR] Could not flatten columns: {e}")
                 return pd.DataFrame()
 
-        # 🔒 Extra protection: fix bad headers if they all equal the symbol
+        # Extra protection: fix bad headers if all column names are just the symbol (e.g., TSCO.L, TSCO.L,...)
         if all(col == stock_with_suffix for col in data.columns):
             print(f"[DEBUG] All column names match symbol ({stock_with_suffix}). Attempting to reset headers.")
-            data.columns = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+
+            # Define expected headers for common OHLC formats
+            common_headers = [
+                ['Open', 'High', 'Low', 'Close', 'Volume'],                   # 5 columns
+                ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume'],     # 6 columns
+            ]
+
+            for headers in common_headers:
+                if len(data.columns) == len(headers):
+                    data.columns = headers
+                    print(f"[DEBUG] Successfully reset headers to: {headers}")
+                    break
+                else:
+                    print(f"[ERROR] Column count mismatch. Columns: {len(data.columns)}. Unable to reset headers.")
+                    return pd.DataFrame()
+
 
 
         if "Close" not in data.columns:
