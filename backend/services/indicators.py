@@ -26,6 +26,10 @@ def compute_short_term_signals(symbols, exchange, risk_tolerance):
         data['Volatility'] = data['Close'].pct_change().rolling(14).std()
 
         if data['RSI'].dropna().empty or data['Volatility'].dropna().empty or data['Close'].dropna().empty:
+            print(f"[DEBUG] RSI tail for {symbol}: {data['RSI'].tail()}")
+            print(f"[DEBUG] Volatility tail for {symbol}: {data['Volatility'].tail()}")
+            print(f"[DEBUG] Close tail for {symbol}: {data['Close'].tail()}")
+
             results.append({
                 "symbol": symbol,
                 "error": "Failed to compute indicators: Missing RSI, Volatility or Close values."
