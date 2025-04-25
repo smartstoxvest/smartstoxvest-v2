@@ -9,6 +9,14 @@ router = APIRouter()
 
 @router.get("/api/short-term-predict")
 def short_term_predict(symbols: str = Query(...), exchange: str = "NASDAQ", risk_tolerance: float = 1.0):
+    try:
+        symbol_list = [s.strip().upper() for s in symbols.split(",")]
+        results = compute_short_term_signals(symbol_list, exchange, risk_tolerance)
+        return results
+    except Exception as e:
+        import traceback
+        return {"error": str(e), "trace": traceback.format_exc()}
+        
     results = []
 
     for symbol in symbols.split(","):
