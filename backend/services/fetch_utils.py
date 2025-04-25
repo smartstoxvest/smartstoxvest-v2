@@ -28,7 +28,11 @@ def fetch_stock_data(symbol: str, period: str = "1y", exchange: str = "NASDAQ") 
         # Flatten columns if MultiIndex (rarely happens for single ticker, but safe)
         if isinstance(data.columns, pd.MultiIndex):
             print(f"[DEBUG] Flattening MultiIndex columns for {symbol}")
-            data.columns = [col[1] if isinstance(col, tuple) else col for col in data.columns]
+            try:
+                data = data.droplevel(0, axis=1)
+            except Exception as e:
+                print(f"[ERROR] Failed to flatten columns for {symbol}: {e}")
+                return pd.DataFrame()
 
         if "Close" not in data.columns:
             print(f"[DEBUG] 'Close' column missing for {symbol}, columns: {data.columns}")
