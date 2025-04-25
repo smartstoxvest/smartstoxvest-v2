@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useDarkMode } from "@/components/Layout";
-
 
 interface Props {
   base64Image: string;
@@ -8,13 +7,22 @@ interface Props {
   showConfidence?: boolean;
 }
 
-const LSTMChart: React.FC<Props> = ({ base64Image, symbol }) => {
+const LSTMChart: React.FC<Props> = ({ base64Image, symbol, showConfidence }) => {
   const { darkMode } = useDarkMode();
+  const [loading, setLoading] = useState(true);
 
-  if (!base64Image) {
+  useEffect(() => {
+    setLoading(true);
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 500); // nice little animation time
+    return () => clearTimeout(timeout);
+  }, [base64Image]);
+
+  if (!base64Image && loading) {
     return (
-      <p className={`text-center ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-        Chart is loading...
+      <p className={`text-center animate-pulse ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+        Loading chart...
       </p>
     );
   }
@@ -32,8 +40,11 @@ const LSTMChart: React.FC<Props> = ({ base64Image, symbol }) => {
         key={base64Image.slice(0, 20)}
         src={`data:image/png;base64,${base64Image}`}
         alt={`${symbol} Prediction Chart`}
-        className="mx-auto max-w-full rounded-md"
+        className="mx-auto max-w-full rounded-md transition-transform duration-300 hover:scale-105"
       />
+      <p className={`mt-2 text-center text-sm italic ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+        {showConfidence ? "Showing prediction + confidence bands." : "Showing prediction only."}
+      </p>
     </div>
   );
 };
