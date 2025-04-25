@@ -1,29 +1,40 @@
 import yfinance as yf
 import pandas as pd
 
+# Exchange suffix mapping just like v1
+exchange_suffix = {
+    "LSE": ".L",
+    "NASDAQ": "",
+    "NYSE": "",
+    "NSE": ".NS",
+    "Crypto": "-USD"
+}
+
 def fetch_stock_data(symbol: str, period: str = "1y", exchange: str = "NASDAQ") -> pd.DataFrame:
     try:
-        full_symbol = f"{symbol}" if exchange.upper() in ["NASDAQ", "NYSE"] else f"{symbol}.{exchange.upper()}"
-        print(f"[DEBUG] Downloading: {full_symbol}, Period: {period}")
+        # Apply suffix mapping like in Streamlit
+        stock_with_suffix = symbol + exchange_suffix.get(exchange.upper(), "")
+        print(f"[DEBUG] Downloading: {stock_with_suffix}, Period: {period}")
 
-        data = yf.download(tickers=full_symbol, period=period, progress=False)
+        data = yf.download(stock_with_suffix, period=period, progress=False)
 
-        if data is None or data.empty:
+        if data.empty:
             print(f"[DEBUG] No data returned for {symbol}")
             return pd.DataFrame()
 
+        # Flatten columns if MultiIndex (rarely happens for single ticker, but safe)
         if isinstance(data.columns, pd.MultiIndex):
-            print(f"[DEBUG] MultiIndex detected. Flattening to use only second level.")
-            data.columns = data.columns.get_level_values(1)
+            print(f"[DEBUG] Flattening MultiIndex columns for {symbol}")
+            data.columns = [col[1] if isinstance(col, tuple) else col for col in data.columns]
 
         if "Close" not in data.columns:
-            print(f"[DEBUG] 'Close' column missing for {symbol}, columns found: {data.columns}")
+            print(f"[DEBUG] 'Close' column missing for {symbol}, columns: {data.columns}")
             return pd.DataFrame()
 
         data = data.dropna(subset=["Close"])
-        print(f"[DEBUG] Data sample for {symbol}:\n{data.head()}")
+        print(f"[DEBUG] Sample data for {symbol}:\n{data.head()}")
         return data
 
     except Exception as e:
-        print(f"Error fetching data for {symbol}: {e}")
+        print(f"[ERROR] Failed to fetch data for {symbol}: {e}")
         return pd.DataFrame()
