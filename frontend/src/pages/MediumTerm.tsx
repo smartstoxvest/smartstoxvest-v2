@@ -13,6 +13,7 @@ type PredictionData = {
 
 const MediumTerm = () => {
   const [symbolInput, setSymbolInput] = useState("AAPL,TSLA,GOOGL");
+  const [exchange, setExchange] = useState("NASDAQ"); // 🔥 New Exchange dropdown
   const [results, setResults] = useState<{ [symbol: string]: PredictionData }>({});
   const [selectedChartSymbol, setSelectedChartSymbol] = useState<string>("");
   const [showConfidence, setShowConfidence] = useState<boolean>(false);
@@ -29,7 +30,7 @@ const MediumTerm = () => {
       try {
         const res = await axios.post(`http://localhost:8000/api/medium/predict`, {
           symbol,
-          exchange: "NASDAQ", // or whatever the user selects — hardcoded for now
+          exchange,
           period: "2y",
           epochs: 5,
           future_days: 30,
@@ -85,7 +86,7 @@ const MediumTerm = () => {
     <div className="p-6">
       <h1 className="text-4xl font-bold mb-4">📈 Medium-Term Prediction</h1>
 
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
         <input
           type="text"
           value={symbolInput}
@@ -93,6 +94,19 @@ const MediumTerm = () => {
           placeholder="e.g. AAPL, TSLA, GOOGL"
           className="border px-4 py-2 rounded-md w-full max-w-md"
         />
+
+        <select
+          value={exchange}
+          onChange={(e) => setExchange(e.target.value)}
+          className="border px-4 py-2 rounded-md"
+        >
+          <option value="NASDAQ">NASDAQ</option>
+          <option value="NYSE">NYSE</option>
+          <option value="LSE">LSE</option>
+          <option value="NSE">NSE</option>
+          <option value="Crypto">Crypto</option>
+        </select>
+
         <Button onClick={fetchPredictions}>Predict</Button>
       </div>
 
