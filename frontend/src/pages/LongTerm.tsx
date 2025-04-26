@@ -23,21 +23,40 @@ const LongTerm = () => {
   const fetchLongTerm = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/long/predict`, {
-        params: {
-          symbols,
-          exchange: "NASDAQ",
-          period: "5y",
-          simulations: 1000,
-        },
+    const symbolsArray = symbols
+      .split(",")
+      .map((s) => s.trim().toUpperCase())
+      .filter(Boolean);
+
+    const newResults: LongTermResult[] = [];
+
+    for (const symbol of symbolsArray) {
+      const response = await axios.post(`${API_URL}/long/predict`, {
+        symbol,
+        exchange: "NASDAQ",
+        period: "5y",
+        simulations: 1000,
       });
-      setResults(response.data);
-    } catch (err) {
-      console.error("Error fetching long-term analysis:", err);
-    } finally {
-      setLoading(false);
+
+      console.log(`📦 Response for ${symbol}:`, response.data);
+
+      newResults.push({
+        symbol: response.data.symbol,
+        last_price: response.data.current_price,
+        predicted_price: (response.data.current_price + response.data.best_case) / 2,
+        worst_case: response.data.worst_case,
+        best_case: response.data.best_case,
+        decision: response.data.decision,
+      });
     }
-  };
+
+    setResults(newResults);
+  } catch (err) {
+    console.error("Error fetching long-term analysis:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const downloadCSV = () => {
     const headers = ["Symbol,Last Price,Predicted,Worst Case,Best Case,Decision"];
