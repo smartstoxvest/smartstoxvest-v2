@@ -36,8 +36,8 @@ const MediumTerm = () => {
       console.log(`🚀 Requesting prediction for: ${symbol}`);
       const res = await axios.post(`${API_URL}/medium/predict`, {
         symbol,
-        period: "2y",
-        epochs: 5,
+        period: "6mo",
+        epochs: 1,
         future_days: 30,
       });
       console.log(`✅ Got response for: ${symbol}`);
