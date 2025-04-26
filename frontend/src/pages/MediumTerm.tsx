@@ -16,7 +16,7 @@ type PredictionData = {
 
 const MediumTerm = () => {
   const [symbolInput, setSymbolInput] = useState("AAPL,TSLA,GOOGL");
-  const [exchange, setExchange] = useState("NASDAQ");
+
   const [results, setResults] = useState<{ [symbol: string]: PredictionData }>({});
   const [selectedChartSymbol, setSelectedChartSymbol] = useState<string>("");
   const [showConfidence, setShowConfidence] = useState<boolean>(false);
@@ -97,19 +97,7 @@ const MediumTerm = () => {
           placeholder="e.g. AAPL, TSLA, GOOGL"
           className="border px-4 py-2 rounded-md w-full max-w-md"
         />
-
-        <select
-          value={exchange}
-          onChange={(e) => setExchange(e.target.value)}
-          className="border px-4 py-2 rounded-md"
-        >
-          <option value="NASDAQ">NASDAQ</option>
-          <option value="NYSE">NYSE</option>
-          <option value="LSE">LSE</option>
-          <option value="NSE">NSE</option>
-          <option value="Crypto">Crypto</option>
-        </select>
-
+        
         <Button onClick={fetchPredictions}>
           Predict
         </Button>
