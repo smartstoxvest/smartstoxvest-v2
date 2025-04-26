@@ -11,48 +11,41 @@ type PredictionData = {
   recommendation: string;
 };
 
-const MediumTerm = () => {
-  const [symbolInput, setSymbolInput] = useState("AAPL,TSLA,GOOGL");
-  const [exchange, setExchange] = useState("NASDAQ"); // 🔥 New Exchange dropdown
-  const [results, setResults] = useState<{ [symbol: string]: PredictionData }>({});
-  const [selectedChartSymbol, setSelectedChartSymbol] = useState<string>("");
-  const [showConfidence, setShowConfidence] = useState<boolean>(false);
+const fetchPredictions = async () => {
+  const symbols = symbolInput
+    .split(",")
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean);
 
-  const fetchPredictions = async () => {
-    const symbols = symbolInput
-      .split(",")
-      .map((s) => s.trim().toUpperCase())
-      .filter(Boolean);
+  const newResults: { [symbol: string]: PredictionData } = {};
 
-    const newResults: { [symbol: string]: PredictionData } = {};
+  for (const symbol of symbols) {
+    try {
+      const res = await axios.post(`https://smartstoxvest-v2-backend.onrender.com/medium/predict`, {
+        symbol,
+        exchange,
+        period: "2y",
+        epochs: 5,
+        future_days: 30,
+      });
 
-    for (const symbol of symbols) {
-      try {
-        const res = await axios.post("http://localhost:8000/medium/predict", {
-          symbol,
-          exchange: "NASDAQ",   // ✅ Default for now, make dynamic later if you want
-          period: "2y",         // ✅ Default to "2y"
-          epochs: 5,            // ✅ Default training epochs
-          future_days: 30       // ✅ Predict next 30 days
-        });
+      console.log(`📦 Response for ${symbol}:`, res.data);
 
-        console.log(`📦 Response for ${symbol}:`, res.data);
-
-        newResults[symbol] = {
-          predictedPrice: res.data.end_price ?? 205, 
-          chartBase64: res.data.chart_base64,
-          confidenceLow: res.data.upper_bounds[0] ?? 195,  // Slight adjustment
-          confidenceHigh: res.data.lower_bounds[0] ?? 215,
-          recommendation: res.data.recommendation ?? "Hold",
-        };
-      } catch (err) {
-        console.error(`Error fetching ${symbol}:`, err);
-      }
+      newResults[symbol] = {
+        predictedPrice: res.data.end_price ?? 205,
+        chartBase64: res.data.chart_base64,
+        confidenceLow: res.data.lower_bounds[0] ?? 195,   // ✅ Fix here: use lower_bounds first
+        confidenceHigh: res.data.upper_bounds[0] ?? 215,  // ✅ Fix here: use upper_bounds second
+        recommendation: res.data.recommendation ?? "Hold",
+      };
+    } catch (err) {
+      console.error(`❌ Error fetching ${symbol}:`, err);
     }
+  }
 
-    setResults(newResults);
-    if (symbols.length > 0) setSelectedChartSymbol(symbols[0]);
-  };
+  setResults(newResults);
+  if (symbols.length > 0) setSelectedChartSymbol(symbols[0]);
+};
 
 
   const generateSummary = () => {
