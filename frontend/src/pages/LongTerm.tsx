@@ -110,7 +110,7 @@ const LongTerm = () => {
                 <tr>
                   <th className="px-4 py-2 text-left">Symbol</th>
                   <th className="px-4 py-2 text-left">Current Price</th>
-                  <th className="px-4 py-2 text-left">Predicted</th>
+                  <th className="px-4 py-2 text-left">Expected Return</th>
                   <th className="px-4 py-2 text-left">Worst Case</th>
                   <th className="px-4 py-2 text-left">Best Case</th>
                   <th className="px-4 py-2 text-left">Decision</th>
