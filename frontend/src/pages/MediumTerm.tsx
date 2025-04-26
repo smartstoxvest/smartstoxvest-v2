@@ -192,6 +192,5 @@ const fetchPredictions = async () => {
       )}
     </div>
   );
-};
 
 export default MediumTerm;
