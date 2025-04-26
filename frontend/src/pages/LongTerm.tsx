@@ -21,7 +21,7 @@ const LongTerm = () => {
   const fetchLongTerm = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/long/predict`, {
+      const response = await axios.get(`${API_URL}/api/long-term-predict``, {
         params: {
           symbols,
           exchange: "NASDAQ",
