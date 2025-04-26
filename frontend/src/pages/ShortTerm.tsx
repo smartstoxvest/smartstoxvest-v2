@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
+const API_URL = import.meta.env.VITE_API_URL;
+
 
 interface ShortTermResult {
   symbol: string;
@@ -25,7 +27,7 @@ const ShortTerm = () => {
   const fetchShortTerm = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:8000/api/short-term-predict", {
+      const response = await axios.get(`${API_URL}/api/short-term-predict`, {
         params: {
           symbols,
           exchange: "NASDAQ",
