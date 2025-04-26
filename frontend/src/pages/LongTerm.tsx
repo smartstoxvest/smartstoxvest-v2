@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { MonteCarloChart } from "@/components/MonteCarloChart";
+const API_URL = import.meta.env.VITE_API_URL;
 
 
 interface LongTermResult {
@@ -22,7 +23,7 @@ const LongTerm = () => {
   const fetchLongTerm = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:8000/api/long-term-predict", {
+      const response = await axios.get(`${API_URL}/api/long-term-predict', {
         params: {
           symbols,
           exchange: "NASDAQ",
