@@ -25,11 +25,14 @@ def fetch_stock_data(symbol: str, period: str = "5y", exchange: str = "NASDAQ") 
         print(f"[ERROR] Failed to fetch data for {symbol}: {e}")
         return pd.DataFrame()
 
-def monte_carlo_simulation(data: pd.DataFrame, days: int = 252, simulations: int = 1000) -> Dict:
+def monte_carlo_simulation(data: pd.DataFrame, period: str = "5y", simulations: int = 1000) -> Dict:
     returns = data['Close'].pct_change().dropna()
     mean_return = returns.mean()
     std_dev = returns.std()
     last_price = data['Close'].iloc[-1]
+
+    years = int(period.replace("y", ""))
+    days = 252 * years  # Fix here
 
     simulation_data = np.zeros((days, simulations))
     simulation_data[0] = last_price
@@ -48,5 +51,5 @@ def monte_carlo_simulation(data: pd.DataFrame, days: int = 252, simulations: int
         "expected_return": round(float(expected_return), 2),
         "worst_case": round(float(worst_case), 2),
         "best_case": round(float(best_case), 2),
-        "decision": "✅ Buy" if worst_case > last_price * 0.9 else "⚠️ Hold" if worst_case > last_price * 0.75 else "❌ Sell"
+        "decision": "Buy" if worst_case > last_price * 0.9 else ("Hold" if worst_case > last_price * 0.75 else "Sell")
     }
