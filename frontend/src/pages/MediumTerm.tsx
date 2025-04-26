@@ -22,6 +22,7 @@ const MediumTerm = () => {
   const [showConfidence, setShowConfidence] = useState<boolean>(false);
 
   const fetchPredictions = async () => {
+    try {
     const symbols = symbolInput
       .split(",")
       .map((s) => s.trim().toUpperCase())
@@ -30,30 +31,30 @@ const MediumTerm = () => {
     const newResults: { [symbol: string]: PredictionData } = {};
 
     for (const symbol of symbols) {
-      try {
-        const res = await axios.post(`${API_URL}/medium/predict`, {
-          symbol,
-          exchange,
-          period: "2y",
-          epochs: 5,
-          future_days: 30,
-        });
+      const res = await axios.post(`${API_URL}/medium/predict`, {
+        symbol,
+        exchange,
+        period: "2y",
+        epochs: 5,
+        future_days: 30,
+      });
 
-        newResults[symbol] = {
-          predictedPrice: res.data.end_price ?? 205,
-          chartBase64: res.data.chart_base64,
-          confidenceLow: res.data.lower_bounds[0] ?? 195,
-          confidenceHigh: res.data.upper_bounds[0] ?? 215,
-          recommendation: res.data.recommendation ?? "Hold",
-        };
-      } catch (err) {
-        console.error(`❌ Error fetching ${symbol}:`, err);
-      }
+      newResults[symbol] = {
+        predictedPrice: res.data.end_price ?? 205,
+        chartBase64: res.data.chart_base64,
+        confidenceLow: res.data.lower_bounds[0] ?? 195,
+        confidenceHigh: res.data.upper_bounds[0] ?? 215,
+        recommendation: res.data.recommendation ?? "Hold",
+      };
     }
 
     setResults(newResults);
     if (symbols.length > 0) setSelectedChartSymbol(symbols[0]);
-  };
+  } catch (err) {
+    console.error(`❌ Error fetching Medium-Term Predictions:`, err);
+    alert("❌ Failed to fetch Medium-Term Predictions. Please try again later.");
+  }
+};
 
   const generateSummary = () => {
     return Object.entries(results).map(([symbol, data]) => {
