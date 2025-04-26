@@ -22,6 +22,7 @@ def predict_medium_term(data: MediumTermRequest):
     suffix_map = {
         "LSE": ".L", "NASDAQ": "", "NYSE": "", "NSE": ".NS", "Crypto": "-USD"
     }
+    default_exchange = "NASDAQ"
     symbol_with_suffix = data.symbol + suffix_map.get(data.exchange, "")
 
     predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds = predict_lstm(
