@@ -33,7 +33,6 @@ const MediumTerm = () => {
     for (const symbol of symbols) {
       const res = await axios.post(`${API_URL}/medium/predict`, {
         symbol,
-        exchange,
         period: "2y",
         epochs: 5,
         future_days: 30,
