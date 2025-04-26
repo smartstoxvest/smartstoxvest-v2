@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from backend.services.helpers.monte_carlo import fetch_stock_data, monte_carlo_simulation
+from backend.services.monte_carlo import fetch_stock_data, monte_carlo_simulation
 
 router = APIRouter(prefix="/long", tags=["Long-Term Analysis"])
 
