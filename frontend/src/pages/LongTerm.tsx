@@ -2,6 +2,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 interface LongTermResult {
@@ -21,17 +22,35 @@ const LongTerm = () => {
   const fetchLongTerm = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/long/predict`, {
-        params: {
-          symbols,
+      const symbolsList = symbols
+        .split(",")
+        .map((s) => s.trim().toUpperCase())
+        .filter(Boolean);
+
+      const newResults: LongTermResult[] = [];
+
+      for (const symbol of symbolsList) {
+        const response = await axios.post(`${API_URL}/long/predict`, {
+          symbol,
           exchange: "NASDAQ",
           period: "5y",
           simulations: 1000,
-        },
-      });
-      setResults(response.data);
+        });
+
+        newResults.push({
+          symbol,
+          current_price: response.data.current_price,
+          predicted_price: response.data.expected_return,
+          worst_case: response.data.worst_case,
+          best_case: response.data.best_case,
+          decision: response.data.decision,
+        });
+      }
+
+      setResults(newResults);
     } catch (err) {
       console.error("Error fetching long-term analysis:", err);
+      alert("❌ Failed to fetch Long-Term Analysis. Please check API or try again.");
     } finally {
       setLoading(false);
     }
