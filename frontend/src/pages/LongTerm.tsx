@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { MonteCarloChart } from "@/components/MonteCarloChart";
 const API_URL = import.meta.env.VITE_API_URL;
 
-
 interface LongTermResult {
   symbol: string;
   last_price: number;
@@ -12,7 +11,6 @@ interface LongTermResult {
   worst_case: number;
   best_case: number;
   decision: string;
-  chart_base64?: string; // optional base64 chart image
 }
 
 const LongTerm = () => {
@@ -23,40 +21,40 @@ const LongTerm = () => {
   const fetchLongTerm = async () => {
     setLoading(true);
     try {
-    const symbolsArray = symbols
-      .split(",")
-      .map((s) => s.trim().toUpperCase())
-      .filter(Boolean);
+      const symbolsArray = symbols
+        .split(",")
+        .map((s) => s.trim().toUpperCase())
+        .filter(Boolean);
 
-    const newResults: LongTermResult[] = [];
+      const newResults: LongTermResult[] = [];
 
-    for (const symbol of symbolsArray) {
-      const response = await axios.post(`${API_URL}/long/predict`, {
-        symbol,
-        exchange: "NASDAQ",
-        period: "5y",
-        simulations: 1000,
-      });
+      for (const symbol of symbolsArray) {
+        const response = await axios.post(`${API_URL}/long/predict`, {
+          symbol,
+          exchange: "NASDAQ",
+          period: "5y",
+          simulations: 1000,
+        });
 
-      console.log(`📦 Response for ${symbol}:`, response.data);
+        console.log(`📦 Response for ${symbol}:`, response.data);
 
-      newResults.push({
-        symbol: response.data.symbol,
-        last_price: response.data.current_price,
-        predicted_price: (response.data.current_price + response.data.best_case) / 2,
-        worst_case: response.data.worst_case,
-        best_case: response.data.best_case,
-        decision: response.data.decision,
-      });
+        newResults.push({
+          symbol: response.data.symbol,
+          last_price: response.data.current_price,
+          predicted_price: (response.data.current_price + response.data.best_case) / 2,
+          worst_case: response.data.worst_case,
+          best_case: response.data.best_case,
+          decision: response.data.decision,
+        });
+      }
+
+      setResults(newResults);
+    } catch (err) {
+      console.error("Error fetching long-term analysis:", err);
+    } finally {
+      setLoading(false);
     }
-
-    setResults(newResults);
-  } catch (err) {
-    console.error("Error fetching long-term analysis:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const downloadCSV = () => {
     const headers = ["Symbol,Last Price,Predicted,Worst Case,Best Case,Decision"];
@@ -79,13 +77,13 @@ const LongTerm = () => {
       const spread = r.best_case - r.worst_case;
       const riskLabel = spread < r.last_price * 0.2 ? "low risk" : spread < r.last_price * 0.4 ? "moderate risk" : "high risk";
       const trend = r.predicted_price > r.last_price * 1.05 ? "expected to grow" : r.predicted_price < r.last_price * 0.95 ? "expected to decline" : "likely stable";
-      return `📌 ${r.symbol} is ${trend} with ${riskLabel}. Recommended action: ${r.decision}.`;
+      return `\ud83d\udccc ${r.symbol} is ${trend} with ${riskLabel}. Recommended action: ${r.decision}.`;
     });
   };
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">📉 Long-Term Risk Analysis</h1>
+      <h1 className="text-3xl font-bold mb-4">\ud83d\udcc9 Long-Term Risk Analysis</h1>
 
       <div className="flex gap-4 mb-6">
         <input
@@ -103,7 +101,7 @@ const LongTerm = () => {
       {results.length > 0 && (
         <>
           <Button onClick={downloadCSV} className="bg-green-600 text-white hover:bg-green-700 mb-4">
-            ⬇️ Download Table as CSV
+            \u2b07\ufe0f Download Table as CSV
           </Button>
 
           <div className="overflow-x-auto rounded-md shadow border mb-4">
@@ -134,20 +132,13 @@ const LongTerm = () => {
           </div>
 
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-300 rounded">
-            <h3 className="text-lg font-semibold mb-1">📌 Strategic Summary</h3>
+            <h3 className="text-lg font-semibold mb-1">\ud83d\udccc Strategic Summary</h3>
             <ul className="list-disc list-inside space-y-1">
               {generateSummary().map((line, idx) => (
                 <li key={idx}>{line}</li>
               ))}
             </ul>
           </div>
-
-          {results.map((r) =>
-            r.chart_base64 ? (
-              <MonteCarloChart key={r.symbol} base64Image={r.chart_base64} symbol={r.symbol} />
-
-            ) : null
-          )}
         </>
       )}
     </div>
