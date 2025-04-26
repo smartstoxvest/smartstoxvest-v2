@@ -20,19 +20,27 @@ const MediumTerm = () => {
   const [results, setResults] = useState<{ [symbol: string]: PredictionData }>({});
   const [selectedChartSymbol, setSelectedChartSymbol] = useState<string>("");
   const [showConfidence, setShowConfidence] = useState<boolean>(false);
-
+  
+  const [loading, setLoading] = useState(false);
   const fetchPredictions = async () => {
-    const symbols = symbolInput.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
+  setLoading(true);
+  try {
+    const symbols = symbolInput
+      .split(",")
+      .map((s) => s.trim().toUpperCase())
+      .filter(Boolean);
+
     const newResults: { [symbol: string]: PredictionData } = {};
 
     for (const symbol of symbols) {
-      try {
+      console.log(`🚀 Requesting prediction for: ${symbol}`);
       const res = await axios.post(`${API_URL}/medium/predict`, {
         symbol,
         period: "2y",
         epochs: 5,
         future_days: 30,
       });
+      console.log(`✅ Got response for: ${symbol}`);
 
       newResults[symbol] = {
         predictedPrice: res.data.end_price ?? 205,
@@ -41,14 +49,16 @@ const MediumTerm = () => {
         confidenceHigh: res.data.upper_bounds[0] ?? 215,
         recommendation: res.data.recommendation ?? "Hold",
       };
-    } catch (err) {
-      console.error(`❌ Failed for symbol ${symbol}:`, err);
-      alert(`❌ Failed to fetch prediction for symbol: ${symbol}`);
     }
-  }
 
-  setResults(newResults);
-  if (symbols.length > 0) setSelectedChartSymbol(symbols[0]);
+    setResults(newResults);
+    if (symbols.length > 0) setSelectedChartSymbol(symbols[0]);
+  } catch (err: any) {
+    console.error(`❌ Error fetching Medium-Term Predictions:`, err.response?.data || err.message || err);
+    alert("❌ Failed to fetch Medium-Term Predictions. Please try again later.");
+  } finally {
+    setLoading(false);
+  }
 };
 
   const generateSummary = () => {
@@ -93,8 +103,8 @@ const MediumTerm = () => {
           className="border px-4 py-2 rounded-md w-full max-w-md"
         />
         
-        <Button onClick={fetchPredictions}>
-          Predict
+        <Button onClick={fetchPredictions} disabled={loading}>
+          {loading ? "Predicting..." : "Predict"}
         </Button>
       </div>
 
