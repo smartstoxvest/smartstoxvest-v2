@@ -2,8 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import LSTMChart from "@/components/LSTMChart";
 import { Button } from "@/components/ui/button";
-const API_URL = import.meta.env.VITE_API_URL;
 
+const API_URL = import.meta.env.VITE_API_URL;
 
 type PredictionData = {
   predictedPrice: number;
@@ -13,42 +13,46 @@ type PredictionData = {
   recommendation: string;
 };
 
-const fetchPredictions = async () => {
-  const symbols = symbolInput
-    .split(",")
-    .map((s) => s.trim().toUpperCase())
-    .filter(Boolean);
+const MediumTerm = () => {
+  const [symbolInput, setSymbolInput] = useState("AAPL,TSLA,GOOGL");
+  const [exchange, setExchange] = useState("NASDAQ");
+  const [results, setResults] = useState<{ [symbol: string]: PredictionData }>({});
+  const [selectedChartSymbol, setSelectedChartSymbol] = useState<string>("");
+  const [showConfidence, setShowConfidence] = useState<boolean>(false);
 
-  const newResults: { [symbol: string]: PredictionData } = {};
+  const fetchPredictions = async () => {
+    const symbols = symbolInput
+      .split(",")
+      .map((s) => s.trim().toUpperCase())
+      .filter(Boolean);
 
-  for (const symbol of symbols) {
-    try {
-      const res = await axios.post(`${API_URL}/medium/predict`, {
-        symbol,
-        exchange,
-        period: "2y",
-        epochs: 5,
-        future_days: 30,
-      });
+    const newResults: { [symbol: string]: PredictionData } = {};
 
-      console.log(`📦 Response for ${symbol}:`, res.data);
+    for (const symbol of symbols) {
+      try {
+        const res = await axios.post(`${API_URL}/medium/predict`, {
+          symbol,
+          exchange,
+          period: "2y",
+          epochs: 5,
+          future_days: 30,
+        });
 
-      newResults[symbol] = {
-        predictedPrice: res.data.end_price ?? 205,
-        chartBase64: res.data.chart_base64,
-        confidenceLow: res.data.lower_bounds[0] ?? 195,   // ✅ Fix here: use lower_bounds first
-        confidenceHigh: res.data.upper_bounds[0] ?? 215,  // ✅ Fix here: use upper_bounds second
-        recommendation: res.data.recommendation ?? "Hold",
-      };
-    } catch (err) {
-      console.error(`❌ Error fetching ${symbol}:`, err);
+        newResults[symbol] = {
+          predictedPrice: res.data.end_price ?? 205,
+          chartBase64: res.data.chart_base64,
+          confidenceLow: res.data.lower_bounds[0] ?? 195,
+          confidenceHigh: res.data.upper_bounds[0] ?? 215,
+          recommendation: res.data.recommendation ?? "Hold",
+        };
+      } catch (err) {
+        console.error(`❌ Error fetching ${symbol}:`, err);
+      }
     }
-  }
 
-  setResults(newResults);
-  if (symbols.length > 0) setSelectedChartSymbol(symbols[0]);
-};
-
+    setResults(newResults);
+    if (symbols.length > 0) setSelectedChartSymbol(symbols[0]);
+  };
 
   const generateSummary = () => {
     return Object.entries(results).map(([symbol, data]) => {
@@ -164,7 +168,9 @@ const fetchPredictions = async () => {
               className="border rounded-md p-2"
             >
               {Object.keys(results).map((sym) => (
-                <option key={sym} value={sym}>{sym}</option>
+                <option key={sym} value={sym}>
+                  {sym}
+                </option>
               ))}
             </select>
           </div>
@@ -192,5 +198,6 @@ const fetchPredictions = async () => {
       )}
     </div>
   );
+};
 
 export default MediumTerm;
