@@ -1,28 +1,36 @@
+# backend/routers/analysis_long.py
+
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
-from typing import List
-from services.monte_carlo import fetch_stock_data, monte_carlo_simulation
+from pydantic import BaseModel
+from backend.services.helpers.monte_carlo import fetch_stock_data, monte_carlo_simulation
 
-router = APIRouter()
+router = APIRouter(prefix="/long", tags=["Long-Term Analysis"])
 
-@router.get("/api/long-term-predict")
-async def get_long_term_predictions(
-    symbols: str = Query(..., description="Comma-separated stock tickers, e.g. AAPL,TSLA"),
-    exchange: str = Query("NASDAQ", description="Stock exchange (e.g. NASDAQ, LSE, NSE)"),
-    period: str = Query("5y", description="Data period (e.g. 5y, 10y)"),
-    simulations: int = Query(1000, description="Number of Monte Carlo simulations")
-):
+class LongTermRequest(BaseModel):
+    symbol: str
+    exchange: str = "NASDAQ"
+    period: str = "5y"
+    simulations: int = 1000
+
+@router.post("/predict")
+async def predict_long_term(request: LongTermRequest):
     try:
-        tickers = [s.strip().upper() for s in symbols.split(",") if s.strip()]
-        results = []
+        data = fetch_stock_data(request.symbol, period=request.period, exchange=request.exchange)
+        
+        if data is None or data.empty:
+            return {"error": "No stock data found."}
 
-        for symbol in tickers:
-            data = fetch_stock_data(symbol, period)
-            if data.empty:
-                continue
-            sim_result = monte_carlo_simulation(data, simulations=simulations)
-            results.append({"symbol": symbol, **sim_result})
+        simulation_results = monte_carlo_simulation(data, simulations=request.simulations)
 
-        return results
+        return {
+            "symbol": request.symbol,
+            "current_price": simulation_results["current_price"],
+            "worst_case": simulation_results["worst_case"],
+            "best_case": simulation_results["best_case"],
+            "expected_return": simulation_results["expected_return"],
+            "decision": simulation_results["decision"],
+        }
+
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
