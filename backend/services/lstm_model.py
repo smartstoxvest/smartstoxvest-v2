@@ -114,22 +114,20 @@ def predict_lstm(symbol: str, period: str = "2y", lookback: int = 60, future_day
 
 
 def generate_chart(symbol, predicted_prices, upper_bounds=None, lower_bounds=None):
-
     plt.figure(figsize=(10, 5))
-    plt.plot(predicted_prices, marker='o', linestyle='-', color='blue')
+    plt.plot(predicted_prices, label="Predicted", color='blue')
+
+    if upper_bounds and lower_bounds:
+        plt.fill_between(range(len(predicted_prices)), lower_bounds, upper_bounds, color='lightblue', alpha=0.3, label='Confidence Band')
+
     plt.title(f"{symbol} Medium-Term LSTM Price Prediction")
     plt.xlabel("Days Ahead")
     plt.ylabel("Price")
+    plt.legend()
     plt.grid(True)
     plt.tight_layout()
 
-    # Save the chart to a buffer
     buffer = io.BytesIO()
-    plt.title(f"{symbol} Medium-Term LSTM Price Prediction")
-    plt.xlabel("Days Ahead")
-    plt.ylabel("Predicted Price")
-    plt.grid(True)
-    plt.tight_layout()
     plt.savefig(buffer, format='png')
     buffer.seek(0)
     chart_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
