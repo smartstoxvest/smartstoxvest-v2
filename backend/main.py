@@ -15,7 +15,7 @@ app = FastAPI()
 app.include_router(analysis_short.router)
 app.include_router(analysis_medium.router)
 app.include_router(analysis_long.router)
-app.include_router(lstm.router)  # 👈 Add this line
+
 
 # ✅ Add CORS middleware
 app.add_middleware(
