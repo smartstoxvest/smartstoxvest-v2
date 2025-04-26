@@ -3,13 +3,27 @@ import numpy as np
 import pandas as pd
 from typing import Dict
 
+# 🔥 Add Exchange Mapping
+exchange_suffix = {
+    "LSE": ".L",
+    "NASDAQ": "",
+    "NYSE": "",
+    "NSE": ".NS",
+    "Crypto": "-USD"
+}
 
-def fetch_stock_data(symbol: str, period: str = "5y") -> pd.DataFrame:
-    data = yf.download(symbol, period=period)
-    if data.empty or "Close" not in data.columns:
+def fetch_stock_data(symbol: str, period: str = "5y", exchange: str = "NASDAQ") -> pd.DataFrame:
+    try:
+        symbol_with_suffix = symbol + exchange_suffix.get(exchange.upper(), "")
+        data = yf.download(symbol_with_suffix, period=period, progress=False)
+
+        if data.empty or "Close" not in data.columns:
+            return pd.DataFrame()
+
+        return data.dropna(subset=["Close"])
+    except Exception as e:
+        print(f"[ERROR] Failed to fetch data for {symbol}: {e}")
         return pd.DataFrame()
-    return data
-
 
 def monte_carlo_simulation(data: pd.DataFrame, days: int = 252, simulations: int = 1000) -> Dict:
     returns = data['Close'].pct_change().dropna()
@@ -24,13 +38,15 @@ def monte_carlo_simulation(data: pd.DataFrame, days: int = 252, simulations: int
         random_returns = np.random.normal(mean_return, std_dev, simulations)
         simulation_data[t] = simulation_data[t - 1] * (1 + random_returns)
 
-    worst_case = np.percentile(simulation_data[-1], 5)
-    best_case = np.percentile(simulation_data[-1], 95)
+    end_prices = simulation_data[-1]
+    worst_case = np.percentile(end_prices, 5)
+    best_case = np.percentile(end_prices, 95)
+    expected_return = np.mean(end_prices)
 
     return {
-        "last_price": round(last_price, 2),
-        "predicted_price": round(np.mean(simulation_data[-1]), 2),
-        "worst_case": round(worst_case, 2),
-        "best_case": round(best_case, 2),
+        "current_price": round(float(last_price), 2),
+        "expected_return": round(float(expected_return), 2),
+        "worst_case": round(float(worst_case), 2),
+        "best_case": round(float(best_case), 2),
         "decision": "✅ Buy" if worst_case > last_price * 0.9 else "⚠️ Hold" if worst_case > last_price * 0.75 else "❌ Sell"
     }
