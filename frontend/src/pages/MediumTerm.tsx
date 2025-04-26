@@ -22,15 +22,11 @@ const MediumTerm = () => {
   const [showConfidence, setShowConfidence] = useState<boolean>(false);
 
   const fetchPredictions = async () => {
-    try {
-    const symbols = symbolInput
-      .split(",")
-      .map((s) => s.trim().toUpperCase())
-      .filter(Boolean);
-
+    const symbols = symbolInput.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
     const newResults: { [symbol: string]: PredictionData } = {};
 
     for (const symbol of symbols) {
+      try {
       const res = await axios.post(`${API_URL}/medium/predict`, {
         symbol,
         period: "2y",
@@ -45,14 +41,14 @@ const MediumTerm = () => {
         confidenceHigh: res.data.upper_bounds[0] ?? 215,
         recommendation: res.data.recommendation ?? "Hold",
       };
+    } catch (err) {
+      console.error(`❌ Failed for symbol ${symbol}:`, err);
+      alert(`❌ Failed to fetch prediction for symbol: ${symbol}`);
     }
-
-    setResults(newResults);
-    if (symbols.length > 0) setSelectedChartSymbol(symbols[0]);
-  } catch (err) {
-    console.error(`❌ Error fetching Medium-Term Predictions:`, err);
-    alert("❌ Failed to fetch Medium-Term Predictions. Please try again later.");
   }
+
+  setResults(newResults);
+  if (symbols.length > 0) setSelectedChartSymbol(symbols[0]);
 };
 
   const generateSummary = () => {
