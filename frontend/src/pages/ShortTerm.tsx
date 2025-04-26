@@ -1,8 +1,9 @@
+// src/pages/ShortTerm.tsx
 import { useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-const API_URL = import.meta.env.VITE_API_URL;
 
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface ShortTermResult {
   symbol: string;
@@ -60,7 +61,7 @@ const ShortTerm = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">\ud83d\udcc8 Short-Term Stock Analysis</h1>
+      <h1 className="text-3xl font-bold mb-4">📈 Short-Term Stock Analysis</h1>
 
       <div className="flex gap-4 mb-6">
         <input
@@ -78,7 +79,7 @@ const ShortTerm = () => {
       {results.length > 0 && (
         <>
           <Button onClick={downloadCSV} className="bg-green-600 text-white hover:bg-green-700 mb-4">
-            \u2b07\ufe0f Download Table as CSV
+            ⬇️ Download Table as CSV
           </Button>
 
           <div className="overflow-x-auto">
@@ -102,11 +103,9 @@ const ShortTerm = () => {
                     <td className="p-2 font-semibold">{res.symbol}</td>
 
                     {"error" in res ? (
-                      <>
-                        <td colSpan={8} className="p-2 text-red-600 italic">
-                          ⚠️ {res.error}
-                        </td>
-                      </>
+                      <td colSpan={8} className="p-2 text-red-600 italic">
+                        ⚠️ {res.error}
+                      </td>
                     ) : (
                       <>
                         <td className="p-2">${res.current_price}</td>
@@ -121,7 +120,6 @@ const ShortTerm = () => {
                     )}
                   </tr>
                 ))}
-
               </tbody>
             </table>
           </div>
