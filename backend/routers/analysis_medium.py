@@ -61,4 +61,3 @@ def predict_medium_term(data: MediumTermRequest):
         "upper_bounds": upper_bounds,
         "lower_bounds": lower_bounds
 }
-
