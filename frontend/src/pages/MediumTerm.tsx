@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import LSTMChart from "@/components/LSTMChart";
 import { Button } from "@/components/ui/button";
+const API_URL = import.meta.env.VITE_API_URL;
+
 
 type PredictionData = {
   predictedPrice: number;
@@ -21,7 +23,7 @@ const fetchPredictions = async () => {
 
   for (const symbol of symbols) {
     try {
-      const res = await axios.post(`https://smartstoxvest-v2-backend.onrender.com/medium/predict`, {
+      const res = await axios.post(`${API_URL}/medium/predict`, {
         symbol,
         exchange,
         period: "2y",
