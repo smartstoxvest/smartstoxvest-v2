@@ -1,3 +1,4 @@
+// src/pages/MediumTerm.tsx
 import { useState } from "react";
 import axios from "axios";
 import LSTMChart from "@/components/LSTMChart";
@@ -108,7 +109,9 @@ const MediumTerm = () => {
           <option value="Crypto">Crypto</option>
         </select>
 
-        <Button onClick={fetchPredictions}>Predict</Button>
+        <Button onClick={fetchPredictions}>
+          Predict
+        </Button>
       </div>
 
       {Object.keys(results).length > 0 && (
