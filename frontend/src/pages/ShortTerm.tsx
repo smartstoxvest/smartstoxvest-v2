@@ -6,19 +6,6 @@ import { Button } from "@/components/ui/button";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Utility: Compute Final Decision
-const computeFinalDecision = (modelDecision: string, newsSentiment: string) => {
-  if (modelDecision === "Invest" && newsSentiment.includes("Positive")) {
-    return "🚀 Invest Strongly";
-  } else if (modelDecision === "Invest" && newsSentiment.includes("Neutral")) {
-    return "✅ Invest";
-  } else if (modelDecision === "Hold" && newsSentiment.includes("Neutral")) {
-    return "🤔 Hold";
-  } else {
-    return "❌ Avoid";
-  }
-};
-
 interface ShortTermResult {
   symbol: string;
   error?: string;
