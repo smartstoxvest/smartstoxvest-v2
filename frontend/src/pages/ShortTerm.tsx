@@ -93,7 +93,7 @@ const ShortTerm = () => {
     "Symbol,Current Price,Predicted Price,RSI,Volatility,Stop Loss,Take Profit,Decision,News Sentiment,Final Decision",
   ];
   const rows = results.map((r) =>
-    `${r.symbol},${r.current_price},${r.predicted_price},${r.rsi},${r.volatility},${r.stop_loss},${r.take_profit},${r.decision},${r.news_sentiment},${r.final_decision}`
+    `${r.symbol},${r.current_price},${r.predicted_price},${r.rsi},${r.volatility},${r.stop_loss},${r.take_profit},${r.decision},${r.news_sentiment},${getFinalDecision(r.decision, r.news_sentiment)}`
   );
   const csvContent = [...headers, ...rows].join("\n");
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -105,6 +105,7 @@ const ShortTerm = () => {
   link.click();
   document.body.removeChild(link);
 };
+
 
   return (
     <div className="p-6">
