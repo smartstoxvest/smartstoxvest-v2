@@ -72,8 +72,16 @@ const ShortTerm = () => {
       });
 
       const enrichedResults = response.data.map((res: ShortTermResult) => ({
-        ...res,
-        final_decision: getFinalDecision(res.decision, res.news_sentiment),
+        symbol: res.symbol,
+        current_price: res.current_price,
+        predicted_price: res.predicted_price,
+        rsi: res.rsi,
+        volatility: res.volatility,
+        stop_loss: res.stop_loss,
+        take_profit: res.take_profit,
+        decision: res.decision,
+        news_sentiment: res.news_sentiment,
+        final_decision: getFinalDecision(res.decision, res.news_sentiment), // 👈 live recompute
       }));
 
       setResults(enrichedResults);
@@ -83,6 +91,7 @@ const ShortTerm = () => {
       setLoading(false);
     }
   };
+
 
   const downloadCSV = () => {
     const headers = [
