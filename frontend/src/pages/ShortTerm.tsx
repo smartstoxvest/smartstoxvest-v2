@@ -17,7 +17,6 @@ interface ShortTermResult {
   take_profit?: number;
   decision?: string;
   news_sentiment?: string;
-  final_decision?: string;
 }
 
 const ShortTerm = () => {
@@ -30,39 +29,44 @@ const ShortTerm = () => {
   const currencySymbol = (exchange: string) => {
     switch (exchange) {
       case "LSE":
-        return "£"; // British Pound
+        return "£";
       case "NSE":
       case "BSE":
-        return "₹"; // Indian Rupee
+        return "₹";
       case "HKEX":
-        return "HK$"; // Hong Kong Dollar
+        return "HK$";
       default:
-        return "$"; // Default US Dollar
+        return "$";
     }
   };
 
   const getFinalDecision = (decision?: string, news_sentiment?: string) => {
-  const newsSentiment = news_sentiment?.toLowerCase() || "";
+    const sentiment = news_sentiment?.toLowerCase() || "";
 
-  if (decision === "Invest") {
-    if (newsSentiment.includes("positive")) {
-      return "🚀 Invest Strongly";
-    } else if (newsSentiment.includes("neutral")) {
-      return "✅ Invest";
-    } else {
-      return "✅ Invest"; // Even if unknown news
+    if (decision === "Invest") {
+      if (sentiment.includes("positive")) {
+        return "🚀 Invest Strongly";
+      } else if (sentiment.includes("neutral")) {
+        return "✅ Invest";
+      } else {
+        return "✅ Invest";
+      }
+    } else if (decision === "Hold") {
+      if (sentiment.includes("positive")) {
+        return "🤔 Hold Carefully";
+      } else {
+        return "🤔 Hold";
+      }
     }
-  } else if (decision === "Hold") {
-    if (newsSentiment.includes("positive")) {
-      return "🤔 Hold Carefully";
-    } else {
-      return "🤔 Hold";
-    }
-  }
-  return "❌ Avoid";
-};
+    return "❌ Avoid";
+  };
 
-
+  const getBadgeClass = (finalDecision: string) => {
+    if (finalDecision.includes("Invest Strongly")) return "bg-green-500 text-white";
+    if (finalDecision.includes("Invest")) return "bg-green-400 text-white";
+    if (finalDecision.includes("Hold")) return "bg-yellow-400 text-black";
+    return "bg-red-500 text-white";
+  };
 
   const fetchShortTerm = async () => {
     setLoading(true);
@@ -74,20 +78,7 @@ const ShortTerm = () => {
         risk_tolerance: 1.0,
       });
 
-      const enrichedResults = response.data.map((res: ShortTermResult) => ({
-        symbol: res.symbol,
-        current_price: res.current_price,
-        predicted_price: res.predicted_price,
-        rsi: res.rsi,
-        volatility: res.volatility,
-        stop_loss: res.stop_loss,
-        take_profit: res.take_profit,
-        decision: res.decision,
-        news_sentiment: res.news_sentiment,
-        final_decision: getFinalDecision(res.decision, res.news_sentiment), // 👈 live recompute
-      }));
-
-      setResults(enrichedResults);
+      setResults(response.data);
     } catch (error) {
       console.error("Short-term analysis failed:", error);
     } finally {
@@ -95,13 +86,12 @@ const ShortTerm = () => {
     }
   };
 
-
   const downloadCSV = () => {
     const headers = [
       "Symbol,Current Price,Predicted Price,RSI,Volatility,Stop Loss,Take Profit,Decision,News Sentiment,Final Decision",
     ];
     const rows = results.map((r) =>
-      `${r.symbol},${r.current_price},${r.predicted_price},${r.rsi},${r.volatility},${r.stop_loss},${r.take_profit},${r.decision},${r.news_sentiment},${r.final_decision}`
+      `${r.symbol},${r.current_price},${r.predicted_price},${r.rsi},${r.volatility},${r.stop_loss},${r.take_profit},${r.decision},${r.news_sentiment},${getFinalDecision(r.decision, r.news_sentiment)}`
     );
     const csvContent = [...headers, ...rows].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -201,31 +191,37 @@ const ShortTerm = () => {
                 </tr>
               </thead>
               <tbody>
-                {results.map((res) => (
-                  <tr key={res.symbol} className="border-t">
-                    <td className="p-3 font-bold">{res.symbol}</td>
-                    {"error" in res ? (
-                      <td colSpan={8} className="text-red-600 italic">
-                        ⚠️ {res.error}
-                      </td>
-                    ) : (
-                      <>
-                        <td>{currencySymbol(exchange)}{res.current_price}</td>
-                        <td>{currencySymbol(exchange)}{res.predicted_price}</td>
-                        <td>{res.rsi}</td>
-                        <td>{res.volatility}</td>
-                        <td>
-                          {currencySymbol(exchange)}{res.stop_loss} / {currencySymbol(exchange)}{res.take_profit}
+                {results.map((res) => {
+                  const finalDecision = getFinalDecision(res.decision, res.news_sentiment);
+                  return (
+                    <tr key={res.symbol} className="border-t">
+                      <td className="p-3 font-bold">{res.symbol}</td>
+                      {"error" in res ? (
+                        <td colSpan={8} className="text-red-600 italic">
+                          ⚠️ {res.error}
                         </td>
-                        <td>{res.decision}</td>
-                        <td>{res.news_sentiment}</td>
-                        <td>{getFinalDecision(res.decision, res.news_sentiment)}</td>
-                      </>
-                    )}
-                  </tr>
-                ))}
+                      ) : (
+                        <>
+                          <td>{currencySymbol(exchange)}{res.current_price}</td>
+                          <td>{currencySymbol(exchange)}{res.predicted_price}</td>
+                          <td>{res.rsi}</td>
+                          <td>{res.volatility}</td>
+                          <td>
+                            {currencySymbol(exchange)}{res.stop_loss} / {currencySymbol(exchange)}{res.take_profit}
+                          </td>
+                          <td>{res.decision}</td>
+                          <td>{res.news_sentiment}</td>
+                          <td>
+                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${getBadgeClass(finalDecision)}`}>
+                              {finalDecision}
+                            </span>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  );
+                })}
               </tbody>
-
             </table>
           </div>
         </div>
