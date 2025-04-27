@@ -16,6 +16,8 @@ interface LongTermResult {
 
 const LongTerm = () => {
   const [symbols, setSymbols] = useState("AAPL,TSLA,GOOGL");
+  const [assetType, setAssetType] = useState("Stock");
+  const [exchange, setExchange] = useState("NASDAQ");
   const [results, setResults] = useState<LongTermResult[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -85,6 +87,54 @@ const LongTerm = () => {
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-4">📉 Long-Term Risk Analysis</h1>
 
+
+      {/* Select Asset Type */}
+    <div className="mb-4">
+      <label className="block text-sm font-medium mb-1">Select Asset Type</label>
+      <select
+        value={assetType}
+        onChange={(e) => setAssetType(e.target.value)}
+        className="border px-4 py-2 rounded-md w-full max-w-md"
+      >
+        <option value="Stock">Stock</option>
+        <option value="ETF">ETF</option>
+        <option value="Crypto">Crypto</option>
+        <option value="Forex">Forex</option>
+      </select>
+    </div>
+
+    {/* Select Exchange */}
+    <div className="mb-4">
+      <label className="block text-sm font-medium mb-1">Select Exchange</label>
+      <select
+        value={exchange}
+        onChange={(e) => setExchange(e.target.value)}
+        className="border px-4 py-2 rounded-md w-full max-w-md"
+      >
+        <option value="NASDAQ">NASDAQ</option>
+        <option value="NYSE">NYSE</option>
+        <option value="LSE">LSE</option>
+        <option value="NSE">NSE</option>
+        <option value="AMEX">AMEX</option>
+        <option value="BSE">BSE</option>
+        <option value="HKEX">HKEX</option>
+        <option value="Crypto">Crypto</option>
+      </select>
+    </div>
+
+    {/* Stock Symbols Input */}
+    <div className="mb-4">
+      <label className="block text-sm font-medium mb-1">Enter Stock Symbols (comma separated)</label>
+      <input
+        type="text"
+        value={symbols}
+        onChange={(e) => setSymbols(e.target.value)}
+        placeholder="e.g., AAPL,TSLA,GOOGL"
+        className="border px-4 py-2 rounded-md w-full max-w-md"
+      />
+    </div>
+
+      
       <div className="flex gap-4 mb-6">
         <input
           type="text"
