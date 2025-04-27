@@ -79,10 +79,11 @@ const ShortTerm = () => {
       });
 
       // 🔥 LIVE enrich final decision HERE before saving to state
-      const enrichedResults = response.data.map((res: ShortTermResult) => ({
+     const enrichedResults: ShortTermResult[] = response.data.map((res: ShortTermResult) => ({
         ...res,
         final_decision: getFinalDecision(res.decision, res.news_sentiment),
       }));
+
 
       setResults(enrichedResults); // <- Save enriched results
     } catch (error) {
@@ -220,7 +221,7 @@ const ShortTerm = () => {
                           <td>{res.news_sentiment}</td>
                           <td>
                             <span className={`px-2 py-1 rounded-full text-xs font-bold ${getBadgeClass(res.final_decision ?? "")}`}>
-                              {res.final_decision}
+                              <td>{res.final_decision || "❌ Avoid"}</td>
                             </span>
                           </td>
                         </>
