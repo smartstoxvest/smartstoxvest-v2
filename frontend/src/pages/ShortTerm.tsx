@@ -1,18 +1,8 @@
-// 🚀 SmartStoxVest Final Polish Pack for Tailwind Supercharged Frontend
-
-// 1. Add hover effects on table rows in ShortTerm.tsx
-// 2. Add loading spinner when fetching data
-// 3. Add toast notification on API error
-// 4. Prepare for Dark Mode switch (basic setup)
-
-// =============================
-
-// ShortTerm.tsx POLISH:
+// src/pages/ShortTerm.tsx
 
 import { useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner"; // ✅ Using sonner for simple toasts
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -37,6 +27,33 @@ const ShortTerm = () => {
   const [assetType, setAssetType] = useState("Stock");
   const [exchange, setExchange] = useState("NASDAQ");
 
+  const currencySymbol = (exchange: string) => {
+    switch (exchange) {
+      case "LSE":
+        return "£"; // British Pound
+      case "NSE":
+      case "BSE":
+        return "₹"; // Indian Rupee
+      case "HKEX":
+        return "HK$"; // Hong Kong Dollar
+      default:
+        return "$"; // Default US Dollar
+    }
+  };
+
+  const getFinalDecision = (decision?: string, news_sentiment?: string) => {
+    if (decision === "Invest") {
+      if (news_sentiment?.includes("Positive")) {
+        return "Invest Strongly";
+      } else if (news_sentiment?.includes("Neutral")) {
+        return "Invest";
+      } else {
+        return "Hold or Avoid";
+      }
+    }
+    return "Hold or Avoid";
+  };
+
   const fetchShortTerm = async () => {
     setLoading(true);
     try {
@@ -46,17 +63,24 @@ const ShortTerm = () => {
         asset_type: assetType,
         risk_tolerance: 1.0,
       });
-      setResults(response.data);
+
+      const enrichedResults = response.data.map((res: ShortTermResult) => ({
+        ...res,
+        final_decision: getFinalDecision(res.decision, res.news_sentiment),
+      }));
+
+      setResults(enrichedResults);
     } catch (error) {
       console.error("Short-term analysis failed:", error);
-      toast.error("Failed to fetch short-term prediction 🚨");
     } finally {
       setLoading(false);
     }
   };
 
   const downloadCSV = () => {
-    const headers = ["Symbol,Current Price,Predicted,RSI,Volatility,Stop Loss,Take Profit,Decision,News Sentiment,Final Decision"];
+    const headers = [
+      "Symbol,Current Price,Predicted Price,RSI,Volatility,Stop Loss,Take Profit,Decision,News Sentiment,Final Decision",
+    ];
     const rows = results.map((r) =>
       `${r.symbol},${r.current_price},${r.predicted_price},${r.rsi},${r.volatility},${r.stop_loss},${r.take_profit},${r.decision},${r.news_sentiment},${r.final_decision}`
     );
@@ -77,6 +101,7 @@ const ShortTerm = () => {
         🚀 Short-Term Stock Analysis
       </h1>
 
+      {/* Form Section */}
       <div className="max-w-2xl mx-auto space-y-6 mb-10">
         <div>
           <label className="block text-sm font-semibold mb-2">Select Asset Type</label>
@@ -104,33 +129,34 @@ const ShortTerm = () => {
             <option value="LSE">LSE</option>
             <option value="NSE">NSE</option>
             <option value="BSE">BSE</option>
-            <option value="AMEX">AMEX</option>
             <option value="HKEX">HKEX</option>
             <option value="Crypto">Crypto</option>
           </select>
         </div>
 
         <div>
-          <label className="block text-sm font-semibold mb-2">Enter Stock Symbols (comma separated)</label>
+          <label className="block text-sm font-semibold mb-2">
+            Enter Stock Symbols (comma separated)
+          </label>
           <input
             type="text"
             value={symbols}
             onChange={(e) => setSymbols(e.target.value)}
+            placeholder="e.g., AAPL,TSLA"
             className="w-full border rounded-md p-3"
           />
         </div>
 
-        <div>
-          <Button
-            onClick={fetchShortTerm}
-            disabled={loading}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-lg"
-          >
-            {loading ? "Analyzing... 🔄" : "Run Analysis"}
-          </Button>
-        </div>
+        <Button
+          onClick={fetchShortTerm}
+          disabled={loading}
+          className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-lg"
+        >
+          {loading ? "Analyzing..." : "Run Analysis"}
+        </Button>
       </div>
 
+      {/* Result Section */}
       {results.length > 0 && (
         <div className="max-w-7xl mx-auto">
           <Button
@@ -157,10 +183,7 @@ const ShortTerm = () => {
               </thead>
               <tbody>
                 {results.map((res) => (
-                  <tr
-                    key={res.symbol}
-                    className="border-t hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  >
+                  <tr key={res.symbol} className="border-t">
                     <td className="p-3 font-bold">{res.symbol}</td>
                     {"error" in res ? (
                       <td colSpan={8} className="text-red-600 italic">
@@ -168,14 +191,14 @@ const ShortTerm = () => {
                       </td>
                     ) : (
                       <>
-                        <td>${res.current_price}</td>
-                        <td>${res.predicted_price}</td>
+                        <td>{currencySymbol(exchange)}{res.current_price}</td>
+                        <td>{currencySymbol(exchange)}{res.predicted_price}</td>
                         <td>{res.rsi}</td>
                         <td>{res.volatility}</td>
-                        <td>${res.stop_loss} / ${res.take_profit}</td>
+                        <td>{currencySymbol(exchange)}{res.stop_loss} / {currencySymbol(exchange)}{res.take_profit}</td>
                         <td>{res.decision}</td>
                         <td>{res.news_sentiment}</td>
-                        <td>{res.final_decision}</td>
+                        <td className="font-semibold">{res.final_decision}</td>
                       </>
                     )}
                   </tr>
