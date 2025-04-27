@@ -30,12 +30,13 @@ const ShortTerm = () => {
   const fetchShortTerm = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/api/short-term-predict`, {
-        symbols,
-        exchange,
-        asset_type: assetType,
-        risk_tolerance: 1.0,
-      });
+      const response = await axios.post(`${API_URL}/api/short-term-predict`, {        
+          symbols,
+          exchange,
+          asset_type: assetType,
+          risk_tolerance: 1.0,
+        },
+      );
       setResults(response.data);
     } catch (error) {
       console.error("Short-term analysis failed:", error);
@@ -61,17 +62,17 @@ const ShortTerm = () => {
   };
 
   return (
-    <div className="min-h-screen p-8 bg-gradient-to-br from-blue-50 to-white">
-      <h1 className="text-4xl font-bold text-center mb-8">🚀 Short-Term Stock Analysis</h1>
+    <div className="min-h-screen flex justify-center items-start py-10 bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-2xl">
+        <h1 className="text-4xl font-bold mb-8 text-center">🚀 Short-Term Stock Analysis</h1>
 
-      <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="space-y-6 mb-8">
           <div>
             <label className="block text-sm font-semibold mb-1">Select Asset Type</label>
             <select
               value={assetType}
               onChange={(e) => setAssetType(e.target.value)}
-              className="w-full border rounded-md p-2"
+              className="border w-full p-2 rounded-md"
             >
               <option value="Stock">Stock</option>
               <option value="ETF">ETF</option>
@@ -85,7 +86,7 @@ const ShortTerm = () => {
             <select
               value={exchange}
               onChange={(e) => setExchange(e.target.value)}
-              className="w-full border rounded-md p-2"
+              className="border w-full p-2 rounded-md"
             >
               <option value="NASDAQ">NASDAQ</option>
               <option value="NYSE">NYSE</option>
@@ -99,74 +100,77 @@ const ShortTerm = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-1">Enter Stock Symbols</label>
+            <label className="block text-sm font-semibold mb-1">Enter Stock Symbols (comma separated)</label>
             <input
               type="text"
               value={symbols}
               onChange={(e) => setSymbols(e.target.value)}
-              placeholder="e.g., AAPL, TSLA"
-              className="w-full border rounded-md p-2"
+              placeholder="e.g. AAPL, TSLA, GOOGL"
+              className="border w-full p-2 rounded-md"
             />
           </div>
         </div>
 
-        <div className="flex justify-center">
-          <Button onClick={fetchShortTerm} disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
-            {loading ? "Analyzing..." : "Run Analysis"}
-          </Button>
-        </div>
-      </div>
+        <Button
+          onClick={fetchShortTerm}
+          disabled={loading}
+          className="w-full text-lg bg-blue-600 hover:bg-blue-700 text-white mb-8"
+        >
+          {loading ? "Analyzing..." : "Run Analysis"}
+        </Button>
 
-      {results.length > 0 && (
-        <>
-          <div className="flex justify-center mb-6">
-            <Button onClick={downloadCSV} className="bg-green-600 hover:bg-green-700 text-white">
+        {results.length > 0 && (
+          <>
+            <Button
+              onClick={downloadCSV}
+              className="w-full text-lg bg-green-600 hover:bg-green-700 text-white mb-6"
+            >
               ⬇️ Download Table as CSV
             </Button>
-          </div>
 
-          <div className="overflow-x-auto bg-white shadow-md rounded-lg p-4">
-            <table className="min-w-full text-sm text-center">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="p-2">Symbol</th>
-                  <th className="p-2">Current</th>
-                  <th className="p-2">Predicted</th>
-                  <th className="p-2">RSI</th>
-                  <th className="p-2">Volatility</th>
-                  <th className="p-2">SL / TP</th>
-                  <th className="p-2">Decision</th>
-                  <th className="p-2">News</th>
-                  <th className="p-2">Final</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.map((res) => (
-                  <tr key={res.symbol} className="border-t">
-                    {"error" in res ? (
-                      <td colSpan={9} className="p-2 text-red-600 italic">
-                        ⚠️ {res.error}
-                      </td>
-                    ) : (
-                      <>
-                        <td className="p-2 font-semibold">{res.symbol}</td>
-                        <td className="p-2">${res.current_price}</td>
-                        <td className="p-2">${res.predicted_price}</td>
-                        <td className="p-2">{res.rsi}</td>
-                        <td className="p-2">{res.volatility}</td>
-                        <td className="p-2">${res.stop_loss} / ${res.take_profit}</td>
-                        <td className="p-2">{res.decision}</td>
-                        <td className="p-2">{res.news_sentiment}</td>
-                        <td className="p-2">{res.final_decision}</td>
-                      </>
-                    )}
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm border rounded">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="p-2 text-left">Symbol</th>
+                    <th className="p-2 text-left">Current</th>
+                    <th className="p-2 text-left">Predicted</th>
+                    <th className="p-2 text-left">RSI</th>
+                    <th className="p-2 text-left">Volatility</th>
+                    <th className="p-2 text-left">SL / TP</th>
+                    <th className="p-2 text-left">Decision</th>
+                    <th className="p-2 text-left">News</th>
+                    <th className="p-2 text-left">Final</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
+                </thead>
+                <tbody>
+                  {results.map((res) => (
+                    <tr key={res.symbol} className="border-t">
+                      <td className="p-2 font-semibold">{res.symbol}</td>
+                      {"error" in res ? (
+                        <td colSpan={8} className="p-2 text-red-600 italic">
+                          ⚠️ {res.error}
+                        </td>
+                      ) : (
+                        <>
+                          <td className="p-2">${res.current_price}</td>
+                          <td className="p-2">${res.predicted_price}</td>
+                          <td className="p-2">{res.rsi}</td>
+                          <td className="p-2">{res.volatility}</td>
+                          <td className="p-2">${res.stop_loss} / ${res.take_profit}</td>
+                          <td className="p-2">{res.decision}</td>
+                          <td className="p-2">{res.news_sentiment}</td>
+                          <td className="p-2">{res.final_decision}</td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };
