@@ -1,3 +1,4 @@
+// src/pages/ShortTerm.tsx
 import { useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
@@ -135,40 +136,40 @@ const ShortTerm = () => {
             ⬇️ Download Results as CSV
           </Button>
 
-          {/* TABLE */}
+          {/* SUPERCHARGED TABLE */}
           <div className="overflow-x-auto">
-            <table className="min-w-full text-sm text-center border rounded-md shadow-md">
-              <thead className="bg-gray-100 font-semibold">
+            <table className="min-w-full table-auto text-sm border border-gray-300 shadow-md rounded-lg overflow-hidden">
+              <thead className="bg-blue-100 text-blue-900 uppercase text-xs tracking-wider">
                 <tr>
-                  <th className="p-3">Symbol</th>
-                  <th className="p-3">Current</th>
-                  <th className="p-3">Predicted</th>
-                  <th className="p-3">RSI</th>
-                  <th className="p-3">Volatility</th>
-                  <th className="p-3">SL / TP</th>
-                  <th className="p-3">Decision</th>
-                  <th className="p-3">News</th>
-                  <th className="p-3">Final</th>
+                  <th className="px-6 py-3 text-left">Symbol</th>
+                  <th className="px-6 py-3 text-left">Current</th>
+                  <th className="px-6 py-3 text-left">Predicted</th>
+                  <th className="px-6 py-3 text-left">RSI</th>
+                  <th className="px-6 py-3 text-left">Volatility</th>
+                  <th className="px-6 py-3 text-left">SL / TP</th>
+                  <th className="px-6 py-3 text-left">Decision</th>
+                  <th className="px-6 py-3 text-left">News</th>
+                  <th className="px-6 py-3 text-left">Final</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-white divide-y divide-gray-200">
                 {results.map((res) => (
-                  <tr key={res.symbol} className="border-t">
-                    <td className="p-3 font-bold">{res.symbol}</td>
+                  <tr key={res.symbol} className="hover:bg-blue-50">
+                    <td className="px-6 py-4 font-bold text-gray-700">{res.symbol}</td>
                     {"error" in res ? (
-                      <td colSpan={8} className="text-red-600 italic">
+                      <td colSpan={8} className="px-6 py-4 text-red-600 italic">
                         ⚠️ {res.error}
                       </td>
                     ) : (
                       <>
-                        <td>${res.current_price}</td>
-                        <td>${res.predicted_price}</td>
-                        <td>{res.rsi}</td>
-                        <td>{res.volatility}</td>
-                        <td>${res.stop_loss} / ${res.take_profit}</td>
-                        <td>{res.decision}</td>
-                        <td>{res.news_sentiment}</td>
-                        <td>{res.final_decision}</td>
+                        <td className="px-6 py-4">${res.current_price}</td>
+                        <td className="px-6 py-4">${res.predicted_price}</td>
+                        <td className="px-6 py-4">{res.rsi}</td>
+                        <td className="px-6 py-4">{res.volatility}</td>
+                        <td className="px-6 py-4">${res.stop_loss} / ${res.take_profit}</td>
+                        <td className="px-6 py-4">{res.decision}</td>
+                        <td className="px-6 py-4">{res.news_sentiment}</td>
+                        <td className="px-6 py-4">{res.final_decision}</td>
                       </>
                     )}
                   </tr>
