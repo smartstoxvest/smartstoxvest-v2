@@ -6,75 +6,70 @@ import { Button } from "@/components/ui/button";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-type PredictionData = {
+interface PredictionData {
   predictedPrice: number;
   chartBase64: string;
   confidenceLow: number;
   confidenceHigh: number;
   recommendation: string;
-};
+}
 
 const MediumTerm = () => {
-  const [symbolInput, setSymbolInput] = useState("AAPL");
-  const [assetType, setAssetType] = useState("Stock");
+  const [symbols, setSymbols] = useState("AAPL");
   const [exchange, setExchange] = useState("NASDAQ");
+  const [assetType, setAssetType] = useState("Stock");
   const [results, setResults] = useState<{ [symbol: string]: PredictionData }>({});
   const [selectedChartSymbol, setSelectedChartSymbol] = useState<string>("");
   const [showConfidence, setShowConfidence] = useState<boolean>(false);
-  
   const [loading, setLoading] = useState(false);
+
   const fetchPredictions = async () => {
-  setLoading(true);
-  try {
-    const symbols = symbolInput
-      .split(",")
-      .map((s) => s.trim().toUpperCase())
-      .filter(Boolean);
+    setLoading(true);
+    try {
+      const symbolsList = symbols
+        .split(",")
+        .map((s) => s.trim().toUpperCase())
+        .filter(Boolean);
 
-    const newResults: { [symbol: string]: PredictionData } = {};
+      const newResults: { [symbol: string]: PredictionData } = {};
 
-    for (const symbol of symbols) {
-      console.log(`🚀 Requesting prediction for: ${symbol}`);
-      const res = await axios.post(`${API_URL}/medium/predict`, {
-      symbol,
-      period: "6mo",
-      epochs: 1,
-      future_days: 30,
-      exchange,
-      asset_type: assetType,
-    });
+      for (const symbol of symbolsList) {
+        const res = await axios.post(`${API_URL}/medium/predict`, {
+          symbol,
+          exchange,
+          asset_type: assetType,
+          period: "2y",
+          epochs: 5,
+          future_days: 30,
+        });
 
-      console.log(`✅ Got response for: ${symbol}`);
+        newResults[symbol] = {
+          predictedPrice: res.data.end_price ?? 0,
+          chartBase64: res.data.chart_base64,
+          confidenceLow: res.data.lower_bounds[0] ?? 0,
+          confidenceHigh: res.data.upper_bounds[0] ?? 0,
+          recommendation: res.data.recommendation ?? "Hold",
+        };
+      }
 
-      newResults[symbol] = {
-        predictedPrice: res.data.end_price ?? 205,
-        chartBase64: res.data.chart_base64,
-        confidenceLow: res.data.lower_bounds[0] ?? 195,
-        confidenceHigh: res.data.upper_bounds[0] ?? 215,
-        recommendation: res.data.recommendation ?? "Hold",
-      };
+      setResults(newResults);
+      if (symbolsList.length > 0) setSelectedChartSymbol(symbolsList[0]);
+    } catch (err: any) {
+      console.error("❌ Error fetching Medium-Term Predictions:", err.response?.data || err.message || err);
+      alert("❌ Failed to fetch Medium-Term Predictions. Please try again later.");
+    } finally {
+      setLoading(false);
     }
-
-    setResults(newResults);
-    if (symbols.length > 0) setSelectedChartSymbol(symbols[0]);
-  } catch (err: any) {
-    console.error(`❌ Error fetching Medium-Term Predictions:`, err.response?.data || err.message || err);
-    alert("❌ Failed to fetch Medium-Term Predictions. Please try again later.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const generateSummary = () => {
     return Object.entries(results).map(([symbol, data]) => {
-      const { predictedPrice, confidenceLow, confidenceHigh, recommendation } = data;
-      const spread = confidenceHigh - confidenceLow;
+      const spread = data.confidenceHigh - data.confidenceLow;
       const confidenceStrength = spread <= 10 ? "high confidence" : "moderate confidence";
-      const trend = predictedPrice > confidenceHigh - 2 ? "rising" : "stable";
+      const trend = data.predictedPrice > data.confidenceHigh - 2 ? "rising" : "stable";
       const trendIcon = trend === "rising" ? "🔼" : "➖";
-      const recIcon = recommendation === "Buy" ? "✅" : recommendation === "Sell" ? "❌" : "⚠️";
-
-      return `${trendIcon} ${symbol} is predicted to be ${trend} with ${confidenceStrength}. ${recIcon} Action: ${recommendation}.`;
+      const recIcon = data.recommendation === "Buy" ? "✅" : data.recommendation === "Sell" ? "❌" : "⚠️";
+      return `${trendIcon} ${symbol} is predicted to be ${trend} with ${confidenceStrength}. ${recIcon} Action: ${data.recommendation}.`;
     });
   };
 
@@ -96,91 +91,60 @@ const MediumTerm = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-4xl font-bold mb-4">📈 Medium-Term Prediction</h1>
+      <h1 className="text-3xl font-bold mb-4">📈 Medium-Term Analysis</h1>
 
-      
-      {/* Select Asset Type */}
-    <div className="mb-4">
-      <label className="block text-sm font-medium mb-1">Select Asset Type</label>
-      <select
-        value={assetType}
-        onChange={(e) => setAssetType(e.target.value)}
-        className="border px-4 py-2 rounded-md w-full max-w-md"
-      >
-        <option value="Stock">Stock</option>
-        <option value="ETF">ETF</option>
-        <option value="Crypto">Crypto</option>
-        <option value="Forex">Forex</option>
-      </select>
-    </div>
+      {/* Form Controls */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <select
+          value={assetType}
+          onChange={(e) => setAssetType(e.target.value)}
+          className="border px-4 py-2 rounded-md w-full md:w-1/4"
+        >
+          <option value="Stock">Stock</option>
+          <option value="ETF">ETF</option>
+          <option value="Crypto">Crypto</option>
+          <option value="Forex">Forex</option>
+        </select>
 
-    {/* Select Exchange */}
-    <div className="mb-4">
-      <label className="block text-sm font-medium mb-1">Select Exchange</label>
-      <select
-        value={exchange}
-        onChange={(e) => setExchange(e.target.value)}
-        className="border px-4 py-2 rounded-md w-full max-w-md"
-      >
-        <option value="NASDAQ">NASDAQ</option>
-        <option value="NYSE">NYSE</option>
-        <option value="LSE">LSE</option>
-        <option value="NSE">NSE</option>
-        <option value="AMEX">AMEX</option>
-        <option value="BSE">BSE</option>
-        <option value="HKEX">HKEX</option>
-        <option value="Crypto">Crypto</option>
-      </select>
-    </div>
+        <select
+          value={exchange}
+          onChange={(e) => setExchange(e.target.value)}
+          className="border px-4 py-2 rounded-md w-full md:w-1/4"
+        >
+          <option value="NASDAQ">NASDAQ</option>
+          <option value="NYSE">NYSE</option>
+          <option value="LSE">LSE</option>
+          <option value="NSE">NSE</option>
+          <option value="BSE">BSE</option>
+          <option value="AMEX">AMEX</option>
+          <option value="HKEX">HKEX</option>
+          <option value="Crypto">Crypto</option>
+        </select>
 
-    {/* Stock  Input */}
-    <div className="mb-4">
-      <label className="block text-sm font-medium mb-1">Enter Stock  (comma separated)</label>
-      <input
-        type="text"
-        value={symbolInput}
-        onChange={(e) => setSymbolInput(e.target.value)}
-        placeholder="e.g., AAPL,TSLA,GOOGL"
-        className="border px-4 py-2 rounded-md w-full max-w-md"
-      />
-    </div>
-
-      
-      
-      <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
         <input
           type="text"
-          value={symbolInput}
-          onChange={(e) => setSymbolInput(e.target.value)}
-          placeholder="e.g. AAPL, TSLA, GOOGL"
-          className="border px-4 py-2 rounded-md w-full max-w-md"
+          value={symbols}
+          onChange={(e) => setSymbols(e.target.value)}
+          placeholder="e.g., AAPL, TSLA, GOOGL"
+          className="border px-4 py-2 rounded-md w-full md:flex-grow"
         />
-        
-        <Button onClick={fetchPredictions} disabled={loading}>
-          {loading ? "Predicting..." : "Predict"}
+
+        <Button onClick={fetchPredictions} disabled={loading} className="w-full md:w-auto">
+          {loading ? "Predicting..." : "Run Prediction"}
         </Button>
       </div>
 
+      {/* Results Section */}
       {Object.keys(results).length > 0 && (
         <>
-          <Button
-            onClick={downloadCSV}
-            className="bg-green-600 text-white hover:bg-green-700 mb-6"
-          >
-            ⬇️ Download Table as CSV
-          </Button>
-
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-300 rounded">
-            <h3 className="text-lg font-semibold mb-1">🧠 Smart Summary</h3>
-            <ul className="list-disc list-inside space-y-1">
-              {generateSummary().map((line, idx) => (
-                <li key={idx}>{line}</li>
-              ))}
-            </ul>
+          <div className="flex justify-between items-center mb-6">
+            <Button onClick={downloadCSV} className="bg-green-600 text-white hover:bg-green-700">
+              ⬇️ Download CSV
+            </Button>
           </div>
 
-          <div className="overflow-x-auto rounded-md shadow border mb-6">
-            <table className="min-w-full table-auto text-sm">
+          <div className="overflow-x-auto mb-6 rounded-md shadow border">
+            <table className="min-w-full text-sm">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="px-4 py-2 text-left">Symbol</th>
@@ -210,6 +174,17 @@ const MediumTerm = () => {
             </table>
           </div>
 
+          {/* Smart Summary Section */}
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-300 rounded">
+            <h3 className="text-lg font-semibold mb-2">🧠 Smart Summary</h3>
+            <ul className="list-disc list-inside space-y-1">
+              {generateSummary().map((line, idx) => (
+                <li key={idx}>{line}</li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Chart Viewer */}
           <div className="mb-4">
             <label className="mr-2 font-semibold">View Chart For:</label>
             <select
@@ -237,6 +212,7 @@ const MediumTerm = () => {
             </select>
           </div>
 
+          {/* Render Chart */}
           {selectedChartSymbol && results[selectedChartSymbol] && (
             <LSTMChart
               base64Image={results[selectedChartSymbol].chartBase64}
