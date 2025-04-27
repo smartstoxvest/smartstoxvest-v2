@@ -31,26 +31,30 @@ const MediumTerm = () => {
         .map((s) => s.trim().toUpperCase())
         .filter(Boolean);
 
+      const res = await axios.post(`${API_URL}/medium/predict`, {
+        symbol: symbols, // Comma-separated
+        exchange,
+        asset_type: assetType,
+        period: "2y",
+        epochs: 5,
+        future_days: 30,
+      });
+
       const newResults: { [symbol: string]: PredictionData } = {};
 
-      for (const symbol of symbolsList) {
-        const res = await axios.post(`${API_URL}/medium/predict`, {
-          symbol,
-          exchange,
-          asset_type: assetType,
-          period: "2y",
-          epochs: 5,
-          future_days: 30,
-        });
-
-        newResults[symbol] = {
-          predictedPrice: res.data.end_price ?? 0,
-          chartBase64: res.data.chart_base64,
-          confidenceLow: res.data.lower_bounds[0] ?? 0,
-          confidenceHigh: res.data.upper_bounds[0] ?? 0,
-          recommendation: res.data.recommendation ?? "Hold",
-        };
-      }
+      res.data.forEach((item: any) => {
+        if (item.error) {
+          console.warn(`⚠️ Prediction failed for ${item.symbol}: ${item.error}`);
+        } else {
+          newResults[item.symbol] = {
+            predictedPrice: item.end_price ?? 0,
+            chartBase64: item.chart_base64,
+            confidenceLow: item.lower_bounds[0] ?? 0,
+            confidenceHigh: item.upper_bounds[0] ?? 0,
+            recommendation: item.recommendation ?? "Hold",
+          };
+        }
+      });
 
       setResults(newResults);
       if (symbolsList.length > 0) setSelectedChartSymbol(symbolsList[0]);
@@ -61,6 +65,7 @@ const MediumTerm = () => {
       setLoading(false);
     }
   };
+
 
   const generateSummary = () => {
     return Object.entries(results).map(([symbol, data]) => {
