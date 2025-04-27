@@ -29,8 +29,7 @@ const ShortTerm = () => {
   const fetchShortTerm = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/api/short-term-predict`, {
-        params: {
+      const response = await axios.post(`${API_URL}/api/short-term-predict`, {        
           symbols,
           exchange,
           asset_type: assetType,
