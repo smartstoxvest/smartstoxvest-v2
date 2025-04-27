@@ -19,6 +19,40 @@ interface ShortTermResult {
   news_sentiment?: string;
 }
 
+const cleanDecision = (text?: string) => {
+  if (!text) return "";
+  return text.replace(/[^\w\s()-]/g, "").replace(/\s+/g, " ").trim();
+};
+
+const getFinalDecision = (decision?: string, news_sentiment?: string) => {
+  const sentiment = news_sentiment?.toLowerCase() || "";
+  const cleanedDecision = cleanDecision(decision);
+
+  if (cleanedDecision === "Invest" || cleanedDecision.includes("Invest")) {
+    if (sentiment.includes("positive")) {
+      return "🚀 Invest Strongly";
+    } else if (sentiment.includes("neutral")) {
+      return "✅ Invest";
+    } else {
+      return "✅ Invest";
+    }
+  } else if (cleanedDecision === "Hold") {
+    if (sentiment.includes("positive")) {
+      return "🤔 Hold Carefully";
+    } else {
+      return "🤔 Hold";
+    }
+  }
+  return "❌ Avoid";
+};
+
+const getBadgeClass = (finalDecision: string) => {
+  if (finalDecision.includes("Invest Strongly")) return "bg-green-500 text-white";
+  if (finalDecision.includes("Invest")) return "bg-green-400 text-white";
+  if (finalDecision.includes("Hold")) return "bg-yellow-400 text-black";
+  return "bg-red-500 text-white";
+};
+
 const ShortTerm = () => {
   const [symbols, setSymbols] = useState("AAPL,TSLA");
   const [results, setResults] = useState<ShortTermResult[]>([]);
@@ -40,40 +74,6 @@ const ShortTerm = () => {
     }
   };
 
-  const cleanDecision = (text?: string) => {
-  if (!text) return "";
-  return text.replace(/[^\w\s()\-]/g, "").replace(/\s+/g, " ").trim();
-};
-
-const getFinalDecision = (decision?: string, news_sentiment?: string) => {
-  const sentiment = news_sentiment?.toLowerCase() || "";
-  const cleanedDecision = cleanDecision(decision);
-
-  if (cleanedDecision === "Invest") {
-    if (sentiment.includes("positive")) {
-      return "🚀 Invest Strongly";
-    } else if (sentiment.includes("neutral")) {
-      return "✅ Invest";
-    } else {
-      return "✅ Invest";
-    }
-  } else if (cleanedDecision === "Hold") {
-    if (sentiment.includes("positive")) {
-      return "🤔 Hold Carefully";
-    } else {
-      return "🤔 Hold";
-    }
-  }
-  return "❌ Avoid";
-};
-
-  const getBadgeClass = (finalDecision: string) => {
-    if (finalDecision.includes("Invest Strongly")) return "bg-green-500 text-white";
-    if (finalDecision.includes("Invest")) return "bg-green-400 text-white";
-    if (finalDecision.includes("Hold")) return "bg-yellow-400 text-black";
-    return "bg-red-500 text-white";
-  };
-
   const fetchShortTerm = async () => {
     setLoading(true);
     try {
@@ -84,8 +84,7 @@ const getFinalDecision = (decision?: string, news_sentiment?: string) => {
         risk_tolerance: 1.0,
       });
 
-      const enrichedResults: ShortTermResult[] = response.data;
-      setResults(enrichedResults); // <- Save enriched results
+      setResults(response.data);
     } catch (error) {
       console.error("Short-term analysis failed:", error);
     } finally {
@@ -93,25 +92,23 @@ const getFinalDecision = (decision?: string, news_sentiment?: string) => {
     }
   };
 
-
   const downloadCSV = () => {
-  const headers = [
-    "Symbol,Current Price,Predicted Price,RSI,Volatility,Stop Loss,Take Profit,Decision,News Sentiment,Final Decision",
-  ];
-  const rows = results.map((r) =>
-    `${r.symbol},${r.current_price},${r.predicted_price},${r.rsi},${r.volatility},${r.stop_loss},${r.take_profit},${r.decision},${r.news_sentiment},${getFinalDecision(r.decision, r.news_sentiment)}`
-  );
-  const csvContent = [...headers, ...rows].join("\n");
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.setAttribute("download", "short_term_predictions.csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
+    const headers = [
+      "Symbol,Current Price,Predicted Price,RSI,Volatility,Stop Loss,Take Profit,Decision,News Sentiment,Final Decision",
+    ];
+    const rows = results.map((r) =>
+      `${r.symbol},${r.current_price},${r.predicted_price},${r.rsi},${r.volatility},${r.stop_loss},${r.take_profit},${r.decision},${r.news_sentiment},${getFinalDecision(r.decision, r.news_sentiment)}`
+    );
+    const csvContent = [...headers, ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "short_term_predictions.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="p-6">
@@ -121,6 +118,7 @@ const getFinalDecision = (decision?: string, news_sentiment?: string) => {
 
       {/* Form Section */}
       <div className="max-w-2xl mx-auto space-y-6 mb-10">
+        {/* Asset Type */}
         <div>
           <label className="block text-sm font-semibold mb-2">Select Asset Type</label>
           <select
@@ -128,13 +126,13 @@ const getFinalDecision = (decision?: string, news_sentiment?: string) => {
             onChange={(e) => setAssetType(e.target.value)}
             className="w-full border rounded-md p-3"
           >
-            <option value="Stock">Stock</option>
-            <option value="ETF">ETF</option>
-            <option value="Crypto">Crypto</option>
-            <option value="Forex">Forex</option>
+            {["Stock", "ETF", "Crypto", "Forex"].map((type) => (
+              <option key={type} value={type}>{type}</option>
+            ))}
           </select>
         </div>
 
+        {/* Exchange */}
         <div>
           <label className="block text-sm font-semibold mb-2">Select Exchange</label>
           <select
@@ -142,20 +140,15 @@ const getFinalDecision = (decision?: string, news_sentiment?: string) => {
             onChange={(e) => setExchange(e.target.value)}
             className="w-full border rounded-md p-3"
           >
-            <option value="NASDAQ">NASDAQ</option>
-            <option value="NYSE">NYSE</option>
-            <option value="LSE">LSE</option>
-            <option value="NSE">NSE</option>
-            <option value="BSE">BSE</option>
-            <option value="HKEX">HKEX</option>
-            <option value="Crypto">Crypto</option>
+            {["NASDAQ", "NYSE", "LSE", "NSE", "BSE", "HKEX", "Crypto"].map((ex) => (
+              <option key={ex} value={ex}>{ex}</option>
+            ))}
           </select>
         </div>
 
+        {/* Symbols */}
         <div>
-          <label className="block text-sm font-semibold mb-2">
-            Enter Stock Symbols (comma separated)
-          </label>
+          <label className="block text-sm font-semibold mb-2">Enter Stock Symbols (comma separated)</label>
           <input
             type="text"
             value={symbols}
@@ -165,6 +158,7 @@ const getFinalDecision = (decision?: string, news_sentiment?: string) => {
           />
         </div>
 
+        {/* Button */}
         <Button
           onClick={fetchShortTerm}
           disabled={loading}
@@ -188,15 +182,9 @@ const getFinalDecision = (decision?: string, news_sentiment?: string) => {
             <table className="min-w-full text-sm text-center border rounded-md shadow-md">
               <thead className="bg-blue-100 font-semibold">
                 <tr>
-                  <th className="p-3">Symbol</th>
-                  <th className="p-3">Current</th>
-                  <th className="p-3">Predicted</th>
-                  <th className="p-3">RSI</th>
-                  <th className="p-3">Volatility</th>
-                  <th className="p-3">SL / TP</th>
-                  <th className="p-3">Decision</th>
-                  <th className="p-3">News</th>
-                  <th className="p-3">Final</th>
+                  {["Symbol", "Current", "Predicted", "RSI", "Volatility", "SL / TP", "Decision", "News", "Final"].map((header) => (
+                    <th key={header} className="p-3">{header}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -215,9 +203,7 @@ const getFinalDecision = (decision?: string, news_sentiment?: string) => {
                           <td>{currencySymbol(exchange)}{res.predicted_price}</td>
                           <td>{res.rsi}</td>
                           <td>{res.volatility}</td>
-                          <td>
-                            {currencySymbol(exchange)}{res.stop_loss} / {currencySymbol(exchange)}{res.take_profit}
-                          </td>
+                          <td>{currencySymbol(exchange)}{res.stop_loss} / {currencySymbol(exchange)}{res.take_profit}</td>
                           <td>{res.decision}</td>
                           <td>{res.news_sentiment}</td>
                           <td>
