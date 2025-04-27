@@ -19,6 +19,7 @@ async def predict_medium_term(data: MediumTermRequest):
     all_predictions = []
 
     for symbol in symbol_list:
+        print("🔥 analysis_medium.py: Calling predict_lstm() NOW")
         predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds = predict_lstm(
             symbol=symbol,
             period=data.period,
