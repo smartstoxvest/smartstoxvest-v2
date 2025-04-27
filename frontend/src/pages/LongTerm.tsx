@@ -34,9 +34,11 @@ const LongTerm = () => {
       for (const symbol of symbolsList) {
         const response = await axios.post(`${API_URL}/long/predict`, {
           symbol,
-          exchange: "NASDAQ",
+          exchange,
           period: "5y",
           simulations: 1000,
+          exchange,
+          asset_type: assetType,
         });
 
         newResults.push({
