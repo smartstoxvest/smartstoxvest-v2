@@ -15,9 +15,9 @@ interface LongTermResult {
 }
 
 const LongTerm = () => {
-  const [symbols, setSymbols] = useState("AAPL,TSLA,GOOGL");
-  const [assetType, setAssetType] = useState("Stock");
+  const [symbols, setSymbols] = useState("AAPL");
   const [exchange, setExchange] = useState("NASDAQ");
+  const [assetType, setAssetType] = useState("Stock");
   const [results, setResults] = useState<LongTermResult[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -32,7 +32,7 @@ const LongTerm = () => {
       const newResults: LongTermResult[] = [];
 
       for (const symbol of symbolsList) {
-        const response = await axios.post(`${API_URL}/long/predict`, {
+        const res = await axios.post(`${API_URL}/long/predict`, {
           symbol,
           exchange,
           asset_type: assetType,
@@ -42,18 +42,18 @@ const LongTerm = () => {
 
         newResults.push({
           symbol,
-          current_price: response.data.current_price,
-          predicted_price: response.data.expected_return,
-          worst_case: response.data.worst_case,
-          best_case: response.data.best_case,
-          decision: response.data.decision,
+          current_price: res.data.current_price ?? 0,
+          predicted_price: res.data.expected_return ?? 0,
+          worst_case: res.data.worst_case ?? 0,
+          best_case: res.data.best_case ?? 0,
+          decision: res.data.decision ?? "Hold",
         });
       }
 
       setResults(newResults);
-    } catch (err) {
-      console.error("Error fetching long-term analysis:", err);
-      alert("❌ Failed to fetch Long-Term Analysis. Please check API or try again.");
+    } catch (err: any) {
+      console.error("❌ Error fetching Long-Term Predictions:", err.response?.data || err.message || err);
+      alert("❌ Failed to fetch Long-Term Predictions. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -88,80 +88,63 @@ const LongTerm = () => {
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-4">📉 Long-Term Risk Analysis</h1>
 
+      {/* Form Controls */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <select
+          value={assetType}
+          onChange={(e) => setAssetType(e.target.value)}
+          className="border px-4 py-2 rounded-md w-full md:w-1/4"
+        >
+          <option value="Stock">Stock</option>
+          <option value="ETF">ETF</option>
+          <option value="Crypto">Crypto</option>
+          <option value="Forex">Forex</option>
+        </select>
 
-      {/* Select Asset Type */}
-    <div className="mb-4">
-      <label className="block text-sm font-medium mb-1">Select Asset Type</label>
-      <select
-        value={assetType}
-        onChange={(e) => setAssetType(e.target.value)}
-        className="border px-4 py-2 rounded-md w-full max-w-md"
-      >
-        <option value="Stock">Stock</option>
-        <option value="ETF">ETF</option>
-        <option value="Crypto">Crypto</option>
-        <option value="Forex">Forex</option>
-      </select>
-    </div>
+        <select
+          value={exchange}
+          onChange={(e) => setExchange(e.target.value)}
+          className="border px-4 py-2 rounded-md w-full md:w-1/4"
+        >
+          <option value="NASDAQ">NASDAQ</option>
+          <option value="NYSE">NYSE</option>
+          <option value="LSE">LSE</option>
+          <option value="NSE">NSE</option>
+          <option value="BSE">BSE</option>
+          <option value="AMEX">AMEX</option>
+          <option value="HKEX">HKEX</option>
+          <option value="Crypto">Crypto</option>
+        </select>
 
-    {/* Select Exchange */}
-    <div className="mb-4">
-      <label className="block text-sm font-medium mb-1">Select Exchange</label>
-      <select
-        value={exchange}
-        onChange={(e) => setExchange(e.target.value)}
-        className="border px-4 py-2 rounded-md w-full max-w-md"
-      >
-        <option value="NASDAQ">NASDAQ</option>
-        <option value="NYSE">NYSE</option>
-        <option value="LSE">LSE</option>
-        <option value="NSE">NSE</option>
-        <option value="AMEX">AMEX</option>
-        <option value="BSE">BSE</option>
-        <option value="HKEX">HKEX</option>
-        <option value="Crypto">Crypto</option>
-      </select>
-    </div>
-
-    {/* Stock Symbols Input */}
-    <div className="mb-4">
-      <label className="block text-sm font-medium mb-1">Enter Stock Symbols (comma separated)</label>
-      <input
-        type="text"
-        value={symbols}
-        onChange={(e) => setSymbols(e.target.value)}
-        placeholder="e.g., AAPL,TSLA,GOOGL"
-        className="border px-4 py-2 rounded-md w-full max-w-md"
-      />
-    </div>
-
-      
-      <div className="flex gap-4 mb-6">
         <input
           type="text"
           value={symbols}
           onChange={(e) => setSymbols(e.target.value)}
-          placeholder="e.g. AAPL, TSLA, GOOGL"
-          className="border px-4 py-2 rounded-md w-full max-w-md"
+          placeholder="e.g., AAPL, TSLA, GOOGL"
+          className="border px-4 py-2 rounded-md w-full md:flex-grow"
         />
-        <Button onClick={fetchLongTerm} disabled={loading}>
+
+        <Button onClick={fetchLongTerm} disabled={loading} className="w-full md:w-auto">
           {loading ? "Analyzing..." : "Run Analysis"}
         </Button>
       </div>
 
+      {/* Results Table */}
       {results.length > 0 && (
         <>
-          <Button onClick={downloadCSV} className="bg-green-600 text-white hover:bg-green-700 mb-4">
-            ⬇️ Download Table as CSV
-          </Button>
+          <div className="flex justify-between items-center mb-6">
+            <Button onClick={downloadCSV} className="bg-green-600 text-white hover:bg-green-700">
+              ⬇️ Download CSV
+            </Button>
+          </div>
 
-          <div className="overflow-x-auto rounded-md shadow border mb-4">
+          <div className="overflow-x-auto rounded-md shadow border mb-6">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="px-4 py-2 text-left">Symbol</th>
                   <th className="px-4 py-2 text-left">Current Price</th>
-                  <th className="px-4 py-2 text-left">Expected Return</th>
+                  <th className="px-4 py-2 text-left">Predicted</th>
                   <th className="px-4 py-2 text-left">Worst Case</th>
                   <th className="px-4 py-2 text-left">Best Case</th>
                   <th className="px-4 py-2 text-left">Decision</th>
@@ -182,8 +165,9 @@ const LongTerm = () => {
             </table>
           </div>
 
+          {/* Smart Summary */}
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-300 rounded">
-            <h3 className="text-lg font-semibold mb-1">📌 Strategic Summary</h3>
+            <h3 className="text-lg font-semibold mb-2">📌 Strategic Summary</h3>
             <ul className="list-disc list-inside space-y-1">
               {generateSummary().map((line, idx) => (
                 <li key={idx}>{line}</li>
