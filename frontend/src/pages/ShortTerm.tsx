@@ -44,15 +44,22 @@ const ShortTerm = () => {
   const getFinalDecision = (decision?: string, news_sentiment?: string) => {
     if (decision === "Invest") {
       if (news_sentiment?.includes("Positive")) {
-        return "Invest Strongly";
+        return "🚀 Invest Strongly"; // ✅ Positive News + Invest = Invest Strongly
       } else if (news_sentiment?.includes("Neutral")) {
-        return "Invest";
+        return "✅ Invest"; // ✅ Neutral News + Invest = Invest
       } else {
-        return "Hold or Avoid";
+        return "✅ Invest"; // ✅ Even if no news, still Invest
+      }
+    } else if (decision === "Hold") {
+      if (news_sentiment?.includes("Positive")) {
+        return "🤔 Hold Carefully"; // Positive news but model says Hold
+      } else {
+        return "🤔 Hold"; // Just Hold
       }
     }
-    return "Hold or Avoid";
+    return "❌ Avoid"; // Default: Avoid
   };
+
 
   const fetchShortTerm = async () => {
     setLoading(true);
