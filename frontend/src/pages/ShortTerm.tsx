@@ -103,6 +103,10 @@ const ShortTerm = () => {
             <option value="NYSE">NYSE</option>
             <option value="LSE">LSE</option>
             <option value="NSE">NSE</option>
+            <option value="BSE">BSE</option>
+            <option value="AMEX">AMEX</option>
+            <option value="HKEX">HKEX</option>
+            <option value="Crypto">Crypto</option>
           </select>
         </div>
 
