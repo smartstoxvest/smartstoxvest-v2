@@ -17,41 +17,36 @@ class ShortTermRequest(BaseModel):
 def short_term_predict(data: ShortTermRequest):
     try:
         symbol_list = [s.strip().upper() for s in data.symbols.split(",")]
-        results = compute_short_term_signals(symbol_list, data.exchange, data.risk_tolerance)
-        return results
     except Exception as e:
         import traceback
         return {"error": str(e), "trace": traceback.format_exc()}
 
-        
     results = []
 
-    for symbol in symbols.split(","):
-        symbol = symbol.strip().upper()
-        data = fetch_stock_data(symbol, "1y", exchange)
+    for symbol in symbol_list:
+        df = fetch_stock_data(symbol, "1y", data.exchange)
 
-        if data is None or data.empty or "Close" not in data:
-            print(f"[WARN] No data found for {symbol}")
+        if df is None or df.empty or "Close" not in df.columns:
             results.append({"symbol": symbol, "error": "No data found"})
             continue
 
         # Calculate indicators
-        data['SMA50'] = data['Close'].rolling(window=50).mean()
-        data['SMA200'] = data['Close'].rolling(window=200).mean()
-        data = calculate_rsi(data)
-        data['Volatility'] = data['Close'].pct_change().rolling(14).std()
+        df['SMA50'] = df['Close'].rolling(window=50).mean()
+        df['SMA200'] = df['Close'].rolling(window=200).mean()
+        df = calculate_rsi(df)
+        df['Volatility'] = df['Close'].pct_change().rolling(14).std()
 
-        current_price = data['Close'].iloc[-1]
-        predicted_price = current_price * 1.02  # basic model
-        rsi = data['RSI'].iloc[-1]
-        volatility = data['Volatility'].iloc[-1]
+        current_price = df['Close'].iloc[-1]
+        predicted_price = current_price * 1.02  # simple +2% model
+        rsi = df['RSI'].iloc[-1]
+        volatility = df['Volatility'].iloc[-1]
 
-        atr_data = calculate_atr(data)
+        atr_data = calculate_atr(df)
         atr = atr_data['ATR'].iloc[-1]
-        stop_loss = current_price - (atr * 1.5 * (2 - risk_tolerance))
-        take_profit = current_price + (atr * 2.5 * risk_tolerance)
+        stop_loss = current_price - (atr * 1.5 * (2 - data.risk_tolerance))
+        take_profit = current_price + (atr * 2.5 * data.risk_tolerance)
 
-        # Basic decision logic
+        # Technical Decision
         if predicted_price > current_price:
             if rsi < 30:
                 decision = "✅ Invest (Buy Opportunity)"
@@ -62,27 +57,36 @@ def short_term_predict(data: ShortTermRequest):
         else:
             decision = "❌ Avoid"
 
+        # News Decision
         news_decision, sentiment = get_news_decision(symbol)
 
-        # Scoring
-        tech_score = {"Invest": 7, "Invest (Buy Opportunity)": 9, "Hold (Overbought)": 4, "Hold": 3, "Avoid": 1}
-        news_score = {"Positive News - Consider Buying": 8, "Neutral News - Hold": 5, "Negative News - Consider Selling": 2}
+        # Score Calculation
+        tech_score_map = {"Invest": 7, "Invest (Buy Opportunity)": 9, "Hold (Overbought)": 4, "Hold": 3, "Avoid": 1}
+        news_score_map = {"Positive News - Consider Buying": 8, "Neutral News - Hold": 5, "Negative News - Consider Selling": 2}
 
         tech_clean = clean_decision_text(decision)
         news_clean = clean_decision_text(news_decision)
 
-        total_score = tech_score.get(tech_clean, 0) + news_score.get(news_clean, 0)
+        tech_score = tech_score_map.get(tech_clean, 0)
+        news_score = news_score_map.get(news_clean, 0)
 
+        total_score = tech_score + news_score
+
+        # Final Decision
         if total_score >= 14:
-            final_decision = "Invest ongly"
+            final_decision = "🚀 Invest Strongly"
         elif total_score >= 11:
-            final_decision = "Invest"
+            final_decision = "✅ Invest"
         elif total_score >= 8:
-            final_decision = "Review Further"
+            final_decision = "🤔 Review Further"
         else:
-            final_decision = "Hold"
+            final_decision = "❌ Hold or Avoid"
 
-        signal_conflict = "⚠️ Mixed Signal" if rsi > 70 and "Positive News" in news_decision else "✅ No Conflict"
+        # Mixed Signal Downgrade Rule
+        signal_conflict = "✅ No Conflict"
+        if rsi > 70 and "Positive News" in news_decision:
+            signal_conflict = "⚠️ Mixed Signal"
+            final_decision = "🤔 Review Further"
 
         results.append({
             "symbol": symbol,
