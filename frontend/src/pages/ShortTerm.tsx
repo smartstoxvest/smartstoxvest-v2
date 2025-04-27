@@ -211,15 +211,28 @@ const ShortTerm = () => {
                         <td>{currencySymbol(exchange)}{res.predicted_price}</td>
                         <td>{res.rsi}</td>
                         <td>{res.volatility}</td>
-                        <td>{currencySymbol(exchange)}{res.stop_loss} / {currencySymbol(exchange)}{res.take_profit}</td>
+                        <td>
+                          {currencySymbol(exchange)}{res.stop_loss} / {currencySymbol(exchange)}{res.take_profit}
+                        </td>
                         <td>{res.decision}</td>
                         <td>{res.news_sentiment}</td>
-                        <td>{res.final_decision}</td>
+
+                        {/* ✅ FINAL DECISION - LIVE computed */}
+                        <td>
+                          {res.decision === "Invest" && res.news_sentiment?.includes("Positive")
+                            ? "🚀 Invest Strongly"
+                            : res.decision === "Invest" && res.news_sentiment?.includes("Neutral")
+                            ? "✅ Invest"
+                            : res.decision === "Hold" && res.news_sentiment?.includes("Neutral")
+                            ? "🤔 Hold"
+                            : "❌ Avoid"}
+                        </td>
                       </>
                     )}
                   </tr>
                 ))}
               </tbody>
+
             </table>
           </div>
         </div>
