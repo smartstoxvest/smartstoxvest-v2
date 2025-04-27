@@ -78,7 +78,13 @@ const ShortTerm = () => {
         risk_tolerance: 1.0,
       });
 
-      setResults(response.data);
+      // 🔥 LIVE enrich final decision HERE before saving to state
+      const enrichedResults = response.data.map((res: ShortTermResult) => ({
+        ...res,
+        final_decision: getFinalDecision(res.decision, res.news_sentiment),
+      }));
+
+      setResults(enrichedResults); // <- Save enriched results
     } catch (error) {
       console.error("Short-term analysis failed:", error);
     } finally {
@@ -86,23 +92,24 @@ const ShortTerm = () => {
     }
   };
 
+
   const downloadCSV = () => {
-    const headers = [
-      "Symbol,Current Price,Predicted Price,RSI,Volatility,Stop Loss,Take Profit,Decision,News Sentiment,Final Decision",
-    ];
-    const rows = results.map((r) =>
-      `${r.symbol},${r.current_price},${r.predicted_price},${r.rsi},${r.volatility},${r.stop_loss},${r.take_profit},${r.decision},${r.news_sentiment},${getFinalDecision(r.decision, r.news_sentiment)}`
-    );
-    const csvContent = [...headers, ...rows].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "short_term_predictions.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const headers = [
+    "Symbol,Current Price,Predicted Price,RSI,Volatility,Stop Loss,Take Profit,Decision,News Sentiment,Final Decision",
+  ];
+  const rows = results.map((r) =>
+    `${r.symbol},${r.current_price},${r.predicted_price},${r.rsi},${r.volatility},${r.stop_loss},${r.take_profit},${r.decision},${r.news_sentiment},${r.final_decision}`
+  );
+  const csvContent = [...headers, ...rows].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "short_term_predictions.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
   return (
     <div className="p-6">
@@ -212,8 +219,8 @@ const ShortTerm = () => {
                           <td>{res.decision}</td>
                           <td>{res.news_sentiment}</td>
                           <td>
-                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${getBadgeClass(finalDecision)}`}>
-                              {finalDecision}
+                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${getBadgeClass(res.final_decision ?? "")}`}>
+                              {res.final_decision}
                             </span>
                           </td>
                         </>
