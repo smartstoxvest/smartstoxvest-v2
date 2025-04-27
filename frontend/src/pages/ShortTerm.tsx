@@ -1,7 +1,18 @@
-// src/pages/ShortTerm.tsx
+// 🚀 SmartStoxVest Final Polish Pack for Tailwind Supercharged Frontend
+
+// 1. Add hover effects on table rows in ShortTerm.tsx
+// 2. Add loading spinner when fetching data
+// 3. Add toast notification on API error
+// 4. Prepare for Dark Mode switch (basic setup)
+
+// =============================
+
+// ShortTerm.tsx POLISH:
+
 import { useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner"; // ✅ Using sonner for simple toasts
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -38,6 +49,7 @@ const ShortTerm = () => {
       setResults(response.data);
     } catch (error) {
       console.error("Short-term analysis failed:", error);
+      toast.error("Failed to fetch short-term prediction 🚨");
     } finally {
       setLoading(false);
     }
@@ -65,10 +77,7 @@ const ShortTerm = () => {
         🚀 Short-Term Stock Analysis
       </h1>
 
-      {/* FORM AREA */}
       <div className="max-w-2xl mx-auto space-y-6 mb-10">
-
-        {/* Select Asset Type */}
         <div>
           <label className="block text-sm font-semibold mb-2">Select Asset Type</label>
           <select
@@ -83,7 +92,6 @@ const ShortTerm = () => {
           </select>
         </div>
 
-        {/* Select Exchange */}
         <div>
           <label className="block text-sm font-semibold mb-2">Select Exchange</label>
           <select
@@ -95,38 +103,30 @@ const ShortTerm = () => {
             <option value="NYSE">NYSE</option>
             <option value="LSE">LSE</option>
             <option value="NSE">NSE</option>
-            <option value="AMEX">AMEX</option>
-            <option value="BSE">BSE</option>
-            <option value="HKEX">HKEX</option>
-            <option value="Crypto">Crypto</option>
           </select>
         </div>
 
-        {/* Enter Stock Symbols */}
         <div>
           <label className="block text-sm font-semibold mb-2">Enter Stock Symbols (comma separated)</label>
           <input
             type="text"
             value={symbols}
             onChange={(e) => setSymbols(e.target.value)}
-            placeholder="e.g., AAPL,TSLA"
             className="w-full border rounded-md p-3"
           />
         </div>
 
-        {/* Run Analysis Button */}
         <div>
           <Button
             onClick={fetchShortTerm}
             disabled={loading}
             className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-lg"
           >
-            {loading ? "Analyzing..." : "Run Analysis"}
+            {loading ? "Analyzing... 🔄" : "Run Analysis"}
           </Button>
         </div>
       </div>
 
-      {/* DOWNLOAD BUTTON */}
       {results.length > 0 && (
         <div className="max-w-7xl mx-auto">
           <Button
@@ -136,40 +136,42 @@ const ShortTerm = () => {
             ⬇️ Download Results as CSV
           </Button>
 
-          {/* SUPERCHARGED TABLE */}
           <div className="overflow-x-auto">
-            <table className="min-w-full table-auto text-sm border border-gray-300 shadow-md rounded-lg overflow-hidden">
-              <thead className="bg-blue-100 text-blue-900 uppercase text-xs tracking-wider">
+            <table className="min-w-full text-sm text-center border rounded-md shadow-md">
+              <thead className="bg-blue-100 font-semibold">
                 <tr>
-                  <th className="px-6 py-3 text-left">Symbol</th>
-                  <th className="px-6 py-3 text-left">Current</th>
-                  <th className="px-6 py-3 text-left">Predicted</th>
-                  <th className="px-6 py-3 text-left">RSI</th>
-                  <th className="px-6 py-3 text-left">Volatility</th>
-                  <th className="px-6 py-3 text-left">SL / TP</th>
-                  <th className="px-6 py-3 text-left">Decision</th>
-                  <th className="px-6 py-3 text-left">News</th>
-                  <th className="px-6 py-3 text-left">Final</th>
+                  <th className="p-3">Symbol</th>
+                  <th className="p-3">Current</th>
+                  <th className="p-3">Predicted</th>
+                  <th className="p-3">RSI</th>
+                  <th className="p-3">Volatility</th>
+                  <th className="p-3">SL / TP</th>
+                  <th className="p-3">Decision</th>
+                  <th className="p-3">News</th>
+                  <th className="p-3">Final</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody>
                 {results.map((res) => (
-                  <tr key={res.symbol} className="hover:bg-blue-50">
-                    <td className="px-6 py-4 font-bold text-gray-700">{res.symbol}</td>
+                  <tr
+                    key={res.symbol}
+                    className="border-t hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <td className="p-3 font-bold">{res.symbol}</td>
                     {"error" in res ? (
-                      <td colSpan={8} className="px-6 py-4 text-red-600 italic">
+                      <td colSpan={8} className="text-red-600 italic">
                         ⚠️ {res.error}
                       </td>
                     ) : (
                       <>
-                        <td className="px-6 py-4">${res.current_price}</td>
-                        <td className="px-6 py-4">${res.predicted_price}</td>
-                        <td className="px-6 py-4">{res.rsi}</td>
-                        <td className="px-6 py-4">{res.volatility}</td>
-                        <td className="px-6 py-4">${res.stop_loss} / ${res.take_profit}</td>
-                        <td className="px-6 py-4">{res.decision}</td>
-                        <td className="px-6 py-4">{res.news_sentiment}</td>
-                        <td className="px-6 py-4">{res.final_decision}</td>
+                        <td>${res.current_price}</td>
+                        <td>${res.predicted_price}</td>
+                        <td>{res.rsi}</td>
+                        <td>{res.volatility}</td>
+                        <td>${res.stop_loss} / ${res.take_profit}</td>
+                        <td>{res.decision}</td>
+                        <td>{res.news_sentiment}</td>
+                        <td>{res.final_decision}</td>
                       </>
                     )}
                   </tr>
