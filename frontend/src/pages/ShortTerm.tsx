@@ -216,17 +216,7 @@ const ShortTerm = () => {
                         </td>
                         <td>{res.decision}</td>
                         <td>{res.news_sentiment}</td>
-
-                        {/* ✅ FINAL DECISION - LIVE computed */}
-                        <td>
-                          {res.decision === "Invest" && res.news_sentiment?.includes("Positive")
-                            ? "🚀 Invest Strongly"
-                            : res.decision === "Invest" && res.news_sentiment?.includes("Neutral")
-                            ? "✅ Invest"
-                            : res.decision === "Hold" && res.news_sentiment?.includes("Neutral")
-                            ? "🤔 Hold"
-                            : "❌ Avoid"}
-                        </td>
+                        <td>{getFinalDecision(res.decision, res.news_sentiment)}</td>
                       </>
                     )}
                   </tr>
