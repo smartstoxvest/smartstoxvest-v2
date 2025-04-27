@@ -78,13 +78,7 @@ const ShortTerm = () => {
         risk_tolerance: 1.0,
       });
 
-      // 🔥 LIVE enrich final decision HERE before saving to state
-     const enrichedResults: ShortTermResult[] = response.data.map((res: ShortTermResult) => ({
-        ...res,
-        final_decision: getFinalDecision(res.decision, res.news_sentiment),
-      }));
-
-
+      const enrichedResults: ShortTermResult[] = response.data;
       setResults(enrichedResults); // <- Save enriched results
     } catch (error) {
       console.error("Short-term analysis failed:", error);
