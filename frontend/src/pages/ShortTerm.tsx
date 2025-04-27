@@ -40,26 +40,32 @@ const ShortTerm = () => {
     }
   };
 
-  const getFinalDecision = (decision?: string, news_sentiment?: string) => {
-    const sentiment = news_sentiment?.toLowerCase() || "";
+  const cleanDecision = (text?: string) => {
+  if (!text) return "";
+  return text.replace(/[^\w\s()\-]/g, "").replace(/\s+/g, " ").trim();
+};
 
-    if (decision === "Invest") {
-      if (sentiment.includes("positive")) {
-        return "🚀 Invest Strongly";
-      } else if (sentiment.includes("neutral")) {
-        return "✅ Invest";
-      } else {
-        return "✅ Invest";
-      }
-    } else if (decision === "Hold") {
-      if (sentiment.includes("positive")) {
-        return "🤔 Hold Carefully";
-      } else {
-        return "🤔 Hold";
-      }
+const getFinalDecision = (decision?: string, news_sentiment?: string) => {
+  const sentiment = news_sentiment?.toLowerCase() || "";
+  const cleanedDecision = cleanDecision(decision);
+
+  if (cleanedDecision === "Invest") {
+    if (sentiment.includes("positive")) {
+      return "🚀 Invest Strongly";
+    } else if (sentiment.includes("neutral")) {
+      return "✅ Invest";
+    } else {
+      return "✅ Invest";
     }
-    return "❌ Avoid";
-  };
+  } else if (cleanedDecision === "Hold") {
+    if (sentiment.includes("positive")) {
+      return "🤔 Hold Carefully";
+    } else {
+      return "🤔 Hold";
+    }
+  }
+  return "❌ Avoid";
+};
 
   const getBadgeClass = (finalDecision: string) => {
     if (finalDecision.includes("Invest Strongly")) return "bg-green-500 text-white";
