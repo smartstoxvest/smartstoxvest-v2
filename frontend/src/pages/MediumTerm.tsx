@@ -36,13 +36,14 @@ const MediumTerm = () => {
     for (const symbol of symbols) {
       console.log(`🚀 Requesting prediction for: ${symbol}`);
       const res = await axios.post(`${API_URL}/medium/predict`, {
-        symbol,
-        period: "6mo",
-        epochs: 1,
-        future_days: 30,
-        exchange,
-        asset_type: assetType,
-      });
+      symbol,
+      period: "6mo",
+      epochs: 1,
+      future_days: 30,
+      exchange,
+      asset_type: assetType,
+    });
+
       console.log(`✅ Got response for: ${symbol}`);
 
       newResults[symbol] = {
