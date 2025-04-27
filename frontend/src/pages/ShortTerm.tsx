@@ -198,7 +198,7 @@ const ShortTerm = () => {
                         <td>{currencySymbol(exchange)}{res.stop_loss} / {currencySymbol(exchange)}{res.take_profit}</td>
                         <td>{res.decision}</td>
                         <td>{res.news_sentiment}</td>
-                        {/* FINAL DECISION FIX */}
+                        {/* ✅ FIX THIS FINAL DECISION: call function dynamically */}
                         <td>{getFinalDecision(res.decision, res.news_sentiment)}</td>
                       </>
                     )}
