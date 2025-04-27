@@ -6,6 +6,19 @@ import { Button } from "@/components/ui/button";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// Utility: Compute Final Decision
+const computeFinalDecision = (modelDecision: string, newsSentiment: string) => {
+  if (modelDecision === "Invest" && newsSentiment.includes("Positive")) {
+    return "🚀 Invest Strongly";
+  } else if (modelDecision === "Invest" && newsSentiment.includes("Neutral")) {
+    return "✅ Invest";
+  } else if (modelDecision === "Hold" && newsSentiment.includes("Neutral")) {
+    return "🤔 Hold";
+  } else {
+    return "❌ Avoid";
+  }
+};
+
 interface ShortTermResult {
   symbol: string;
   error?: string;
@@ -198,7 +211,7 @@ const ShortTerm = () => {
                         <td>{currencySymbol(exchange)}{res.stop_loss} / {currencySymbol(exchange)}{res.take_profit}</td>
                         <td>{res.decision}</td>
                         <td>{res.news_sentiment}</td>
-                        <td className="font-semibold">{res.final_decision}</td>
+                        <td {computeFinalDecision(res.decision || "", res.news_sentiment || "")}</td>
                       </>
                     )}
                   </tr>
