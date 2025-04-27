@@ -32,7 +32,8 @@ const ShortTerm = () => {
       const response = await axios.get(`${API_URL}/api/short-term-predict`, {
         params: {
           symbols,
-          exchange: "NASDAQ",
+          exchange,
+          asset_type: assetType,
           risk_tolerance: 1.0,
         },
       });
