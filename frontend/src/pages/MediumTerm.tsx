@@ -40,6 +40,8 @@ const MediumTerm = () => {
         period: "6mo",
         epochs: 1,
         future_days: 30,
+        exchange,
+        asset_type: assetType,
       });
       console.log(`✅ Got response for: ${symbol}`);
 
