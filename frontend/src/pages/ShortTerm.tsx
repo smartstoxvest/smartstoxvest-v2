@@ -24,7 +24,8 @@ const ShortTerm = () => {
   const [symbols, setSymbols] = useState("AAPL,TSLA");
   const [results, setResults] = useState<ShortTermResult[]>([]);
   const [loading, setLoading] = useState(false);
-
+  const [assetType, setAssetType] = useState("Stock");
+  const [exchange, setExchange] = useState("NASDAQ");
   const fetchShortTerm = async () => {
     setLoading(true);
     try {
