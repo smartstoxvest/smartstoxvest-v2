@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from services.lstm_model import predict_lstm
+from backend.services.lstm_model import predict_lstm
 
 router = APIRouter(prefix="/medium", tags=["Medium-Term Analysis"])
 
@@ -9,17 +9,15 @@ class MediumTermRequest(BaseModel):
     period: str
     epochs: int = 5
     future_days: int = 30
+    exchange: str
+    asset_type: str
 
 @router.post("/predict")
-def predict_medium_term(data: MediumTermRequest):
+async def predict_medium_term(data: MediumTermRequest):
     print("📥 Incoming medium-term request:", data.dict())
 
-    # ✅ Basic input validation
-    if data.symbol.lower() == "string" or data.period.lower() == "string":
-        return {"error": "Please enter a valid stock symbol and period."}
-
-    # ✅ Assuming default exchange NASDAQ, and NO suffix required
-    symbol_with_suffix = data.symbol  # No suffix needed now
+    # Directly use symbol, exchange if needed later
+    symbol_with_suffix = data.symbol  # No suffix attached for now
 
     predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds = predict_lstm(
         symbol=symbol_with_suffix,
@@ -30,7 +28,6 @@ def predict_medium_term(data: MediumTermRequest):
     if predicted_prices is None:
         return {"error": confidence}
 
-    # ✅ Build chart data correctly
     chart_data = [
         {
             "day": i + 1,
