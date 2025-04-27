@@ -1,4 +1,3 @@
-// src/pages/ShortTerm.tsx
 import { useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,6 @@ interface ShortTermResult {
   decision?: string;
   news_sentiment?: string;
   final_decision?: string;
-  signal_conflict?: string;
 }
 
 const ShortTerm = () => {
@@ -62,16 +60,20 @@ const ShortTerm = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-4xl font-bold mb-8 text-center">🚀 Short-Term Stock Analysis</h1>
+      <h1 className="text-4xl font-bold mb-8 flex items-center gap-3">
+        🚀 Short-Term Stock Analysis
+      </h1>
 
-      <div className="space-y-6 max-w-lg mx-auto mb-8">
+      {/* FORM AREA */}
+      <div className="max-w-2xl mx-auto space-y-6 mb-10">
+
         {/* Select Asset Type */}
         <div>
-          <label className="block text-sm font-medium mb-1">Select Asset Type</label>
+          <label className="block text-sm font-semibold mb-2">Select Asset Type</label>
           <select
             value={assetType}
             onChange={(e) => setAssetType(e.target.value)}
-            className="border px-4 py-2 rounded-md w-full"
+            className="w-full border rounded-md p-3"
           >
             <option value="Stock">Stock</option>
             <option value="ETF">ETF</option>
@@ -82,11 +84,11 @@ const ShortTerm = () => {
 
         {/* Select Exchange */}
         <div>
-          <label className="block text-sm font-medium mb-1">Select Exchange</label>
+          <label className="block text-sm font-semibold mb-2">Select Exchange</label>
           <select
             value={exchange}
             onChange={(e) => setExchange(e.target.value)}
-            className="border px-4 py-2 rounded-md w-full"
+            className="w-full border rounded-md p-3"
           >
             <option value="NASDAQ">NASDAQ</option>
             <option value="NYSE">NYSE</option>
@@ -99,67 +101,74 @@ const ShortTerm = () => {
           </select>
         </div>
 
-        {/* Stock Symbols Input */}
+        {/* Enter Stock Symbols */}
         <div>
-          <label className="block text-sm font-medium mb-1">Enter Stock Symbols (comma separated)</label>
+          <label className="block text-sm font-semibold mb-2">Enter Stock Symbols (comma separated)</label>
           <input
             type="text"
             value={symbols}
             onChange={(e) => setSymbols(e.target.value)}
-            placeholder="e.g. AAPL, TSLA, GOOGL"
-            className="border px-4 py-2 rounded-md w-full"
+            placeholder="e.g., AAPL,TSLA"
+            className="w-full border rounded-md p-3"
           />
         </div>
 
         {/* Run Analysis Button */}
-        <Button onClick={fetchShortTerm} disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg">
-          {loading ? "Analyzing..." : "Run Analysis"}
-        </Button>
+        <div>
+          <Button
+            onClick={fetchShortTerm}
+            disabled={loading}
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-lg"
+          >
+            {loading ? "Analyzing..." : "Run Analysis"}
+          </Button>
+        </div>
       </div>
 
-      {/* Results */}
+      {/* DOWNLOAD BUTTON */}
       {results.length > 0 && (
-        <>
-          <div className="flex justify-center mb-6">
-            <Button onClick={downloadCSV} className="bg-green-600 text-white hover:bg-green-700">
-              ⬇️ Download Results as CSV
-            </Button>
-          </div>
+        <div className="max-w-7xl mx-auto">
+          <Button
+            onClick={downloadCSV}
+            className="mb-6 bg-green-600 text-white hover:bg-green-700 px-4 py-2"
+          >
+            ⬇️ Download Results as CSV
+          </Button>
 
+          {/* TABLE */}
           <div className="overflow-x-auto">
-            <table className="min-w-full border text-sm rounded-md overflow-hidden">
-              <thead className="bg-gray-100">
+            <table className="min-w-full text-sm text-center border rounded-md shadow-md">
+              <thead className="bg-gray-100 font-semibold">
                 <tr>
-                  <th className="px-4 py-2">Symbol</th>
-                  <th className="px-4 py-2">Current</th>
-                  <th className="px-4 py-2">Predicted</th>
-                  <th className="px-4 py-2">RSI</th>
-                  <th className="px-4 py-2">Volatility</th>
-                  <th className="px-4 py-2">SL / TP</th>
-                  <th className="px-4 py-2">Decision</th>
-                  <th className="px-4 py-2">News</th>
-                  <th className="px-4 py-2">Final</th>
+                  <th className="p-3">Symbol</th>
+                  <th className="p-3">Current</th>
+                  <th className="p-3">Predicted</th>
+                  <th className="p-3">RSI</th>
+                  <th className="p-3">Volatility</th>
+                  <th className="p-3">SL / TP</th>
+                  <th className="p-3">Decision</th>
+                  <th className="p-3">News</th>
+                  <th className="p-3">Final</th>
                 </tr>
               </thead>
               <tbody>
                 {results.map((res) => (
                   <tr key={res.symbol} className="border-t">
-                    <td className="px-4 py-2 font-semibold">{res.symbol}</td>
-
+                    <td className="p-3 font-bold">{res.symbol}</td>
                     {"error" in res ? (
-                      <td colSpan={8} className="px-4 py-2 text-red-600 italic text-center">
+                      <td colSpan={8} className="text-red-600 italic">
                         ⚠️ {res.error}
                       </td>
                     ) : (
                       <>
-                        <td className="px-4 py-2">${res.current_price}</td>
-                        <td className="px-4 py-2">${res.predicted_price}</td>
-                        <td className="px-4 py-2">{res.rsi}</td>
-                        <td className="px-4 py-2">{res.volatility}</td>
-                        <td className="px-4 py-2">${res.stop_loss} / ${res.take_profit}</td>
-                        <td className="px-4 py-2">{res.decision}</td>
-                        <td className="px-4 py-2">{res.news_sentiment}</td>
-                        <td className="px-4 py-2">{res.final_decision}</td>
+                        <td>${res.current_price}</td>
+                        <td>${res.predicted_price}</td>
+                        <td>{res.rsi}</td>
+                        <td>{res.volatility}</td>
+                        <td>${res.stop_loss} / ${res.take_profit}</td>
+                        <td>{res.decision}</td>
+                        <td>{res.news_sentiment}</td>
+                        <td>{res.final_decision}</td>
                       </>
                     )}
                   </tr>
@@ -167,7 +176,7 @@ const ShortTerm = () => {
               </tbody>
             </table>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
