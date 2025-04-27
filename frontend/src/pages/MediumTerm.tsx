@@ -130,13 +130,13 @@ const MediumTerm = () => {
       </select>
     </div>
 
-    {/* Stock Symbols Input */}
+    {/* Stock  Input */}
     <div className="mb-4">
-      <label className="block text-sm font-medium mb-1">Enter Stock Symbols (comma separated)</label>
+      <label className="block text-sm font-medium mb-1">Enter Stock  (comma separated)</label>
       <input
         type="text"
-        value={symbols}
-        onChange={(e) => setSymbols(e.target.value)}
+        value={symbolInput}
+        onChange={(e) => setSymbolInput(e.target.value)}
         placeholder="e.g., AAPL,TSLA,GOOGL"
         className="border px-4 py-2 rounded-md w-full max-w-md"
       />
