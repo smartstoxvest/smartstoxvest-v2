@@ -29,13 +29,20 @@ const ShortTerm = () => {
   const fetchShortTerm = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/api/short-term-predict`, {        
-          symbols,
-          exchange,
-          asset_type: assetType,
-          risk_tolerance: 1.0,
+      const response = await axios.post(`${API_URL}/api/short-term-predict`, 
+      {        
+        symbols,
+        exchange,
+        asset_type: assetType,
+        risk_tolerance: 1.0,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
         },
-      });
+      }
+    );
+
       setResults(response.data);
     } catch (error) {
       console.error("Short-term analysis failed:", error);
