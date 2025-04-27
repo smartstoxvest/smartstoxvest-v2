@@ -1,22 +1,28 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter
+from pydantic import BaseModel
 from backend.services.indicators import compute_short_term_signals
 from backend.services.data_service import fetch_stock_data
 from backend.services.indicators import calculate_rsi, calculate_atr
 from backend.services.sentiment import get_news_decision, clean_decision_text
 
-
-
 router = APIRouter()
 
-@router.get("/api/short-term-predict")
-def short_term_predict(symbols: str = Query(...), exchange: str = "NASDAQ", risk_tolerance: float = 1.0):
+class ShortTermRequest(BaseModel):
+    symbols: str
+    exchange: str
+    asset_type: str
+    risk_tolerance: float = 1.0
+
+@router.post("/api/short-term-predict")
+def short_term_predict(data: ShortTermRequest):
     try:
-        symbol_list = [s.strip().upper() for s in symbols.split(",")]
-        results = compute_short_term_signals(symbol_list, exchange, risk_tolerance)
+        symbol_list = [s.strip().upper() for s in data.symbols.split(",")]
+        results = compute_short_term_signals(symbol_list, data.exchange, data.risk_tolerance)
         return results
     except Exception as e:
         import traceback
         return {"error": str(e), "trace": traceback.format_exc()}
+
         
     results = []
 
@@ -68,7 +74,7 @@ def short_term_predict(symbols: str = Query(...), exchange: str = "NASDAQ", risk
         total_score = tech_score.get(tech_clean, 0) + news_score.get(news_clean, 0)
 
         if total_score >= 14:
-            final_decision = "Invest Strongly"
+            final_decision = "Invest ongly"
         elif total_score >= 11:
             final_decision = "Invest"
         elif total_score >= 8:
