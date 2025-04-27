@@ -2,9 +2,9 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const navItems = [
-  { path: '/', label: 'Home' },
-  { path: '/watchlist', label: 'Watchlist' },
-  { path: '/medium', label: 'Medium-Term Prediction' },
+  { path: '/short-term', label: '📈 Short-Term' },
+  { path: '/medium-term', label: '📊 Medium-Term' },
+  { path: '/long-term', label: '🏦 Long-Term' },
 ];
 
 const Navigation: React.FC = () => {
