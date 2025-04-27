@@ -220,8 +220,8 @@ const ShortTerm = () => {
                           <td>{res.decision}</td>
                           <td>{res.news_sentiment}</td>
                           <td>
-                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${getBadgeClass(res.final_decision ?? "")}`}>
-                              <td>{res.final_decision || "❌ Avoid"}</td>
+                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${getBadgeClass(getFinalDecision(res.decision, res.news_sentiment))}`}>
+                              {getFinalDecision(res.decision, res.news_sentiment)}
                             </span>
                           </td>
                         </>
