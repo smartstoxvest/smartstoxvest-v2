@@ -12,6 +12,18 @@ class MediumTermRequest(BaseModel):
     exchange: str
     asset_type: str
 
+# 👉 ADD THIS small function right **below** your `MediumTermRequest` class (before @router.post)
+def apply_exchange_suffix(symbol: str, exchange: str) -> str:
+    if exchange == "LSE" and not symbol.endswith(".L"):
+        return f"{symbol}.L"
+    if exchange == "NSE" and not symbol.endswith(".NS"):
+        return f"{symbol}.NS"
+    if exchange == "BSE" and not symbol.endswith(".BO"):
+        return f"{symbol}.BO"
+    if exchange == "HKEX" and not symbol.endswith(".HK"):
+        return f"{symbol}.HK"
+    return symbol
+
 @router.post("/predict")
 async def predict_medium_term(data: MediumTermRequest):
     print("📥 Incoming medium-term request:", data.dict())
@@ -21,10 +33,12 @@ async def predict_medium_term(data: MediumTermRequest):
     all_predictions = []
 
     for symbol in symbol_list:
-        print(f"🔥 Predicting for: {symbol}")
+        # ✅ UPDATE HERE: apply suffix
+        smart_symbol = apply_exchange_suffix(symbol, data.exchange)
+        print(f"🔥 Predicting for: {smart_symbol} (Original: {symbol})")
 
         result = predict_lstm(
-            symbol=symbol,
+            symbol=smart_symbol,
             period=data.period,
             future_days=data.future_days
         )
@@ -51,7 +65,7 @@ async def predict_medium_term(data: MediumTermRequest):
         ]
 
         all_predictions.append({
-            "symbol": symbol,
+            "symbol": symbol,  # Keep original symbol for display
             "predicted_prices": predicted_prices,
             "future_days": data.future_days,
             "trend": summary["trend"],
