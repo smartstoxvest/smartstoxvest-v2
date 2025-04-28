@@ -176,10 +176,16 @@ const MediumTerm = () => {
             </ul>
           </div>
 
-          {selectedChartSymbol && results[selectedChartSymbol] && results[selectedChartSymbol].chartBase64 && (
-            <LSTMChart
-              base64Image={results[selectedChartSymbol].chartBase64!}
-              symbol={selectedChartSymbol}
+          {selectedChartSymbol && results[selectedChartSymbol] && (
+            results[selectedChartSymbol].error ? (
+              <div className="text-red-500 font-semibold">
+                ⚠️ No chart available for {selectedChartSymbol}.
+              </div>
+            ) : results[selectedChartSymbol].chartBase64 && (
+              <LSTMChart
+                base64Image={results[selectedChartSymbol].chartBase64!}
+                symbol={selectedChartSymbol}
+   
               
             />
           )}
