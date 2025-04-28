@@ -1,5 +1,3 @@
-// src/pages/MediumTerm.tsx
-
 import { useState } from "react";
 import axios from "axios";
 import LSTMChart from "@/components/LSTMChart";
@@ -28,15 +26,10 @@ const MediumTerm = () => {
 
   const currencySymbol = (exchange: string) => {
     switch (exchange) {
-      case "LSE":
-        return "£";
-      case "NSE":
-      case "BSE":
-        return "₹";
-      case "HKEX":
-        return "HK$";
-      default:
-        return "$";
+      case "LSE": return "£";
+      case "NSE": case "BSE": return "₹";
+      case "HKEX": return "HK$";
+      default: return "$";
     }
   };
 
@@ -77,6 +70,22 @@ const MediumTerm = () => {
     }
   };
 
+  const downloadCSV = () => {
+    const headers = ["Symbol,Current Price,Predicted Price,Confidence Low,Confidence High,Recommendation,Error"];
+    const rows = Object.entries(results).map(([symbol, data]) =>
+      `${symbol},${data.currentPrice ?? ""},${data.predictedPrice ?? ""},${data.confidenceLow ?? ""},${data.confidenceHigh ?? ""},${data.recommendation ?? ""},${data.error ?? ""}`
+    );
+    const csvContent = [...headers, ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "medium_term_predictions.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const generateSummary = () => {
     return Object.entries(results).map(([symbol, data]) => {
       if (data.error) {
@@ -85,16 +94,15 @@ const MediumTerm = () => {
       const spread = (data.confidenceHigh ?? 0) - (data.confidenceLow ?? 0);
       const confidenceStrength = spread <= 10 ? "high confidence" : "moderate confidence";
       const trend = (data.predictedPrice ?? 0) > (data.confidenceHigh ?? 0) - 2 ? "rising" : "stable";
-      const trendIcon = trend === "rising" ? "🕸️" : "➖";
+      const trendIcon = trend === "rising" ? "🔼" : "➖";
       const recIcon = data.recommendation === "Buy" ? "✅" : data.recommendation === "Sell" ? "❌" : "⚠️";
-      return `${trendIcon} ${symbol} is predicted to be ${trend} with ${confidenceStrength}. ${recIcon} Action: ${data.recommendation}.`;
+      return `${trendIcon} ${symbol} is ${trend} with ${confidenceStrength}. ${recIcon} Action: ${data.recommendation}.`;
     });
   };
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">📈 Medium-Term Analysis
-      </h1>
+      <h1 className="text-3xl font-bold mb-4">📈 Medium-Term Analysis</h1>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <select value={assetType} onChange={(e) => setAssetType(e.target.value)} className="border p-2 rounded">
           <option value="Stock">Stock</option>
@@ -120,6 +128,12 @@ const MediumTerm = () => {
 
       {Object.keys(results).length > 0 && (
         <>
+          <div className="flex justify-end mb-4">
+            <Button onClick={downloadCSV} className="bg-green-600 text-white">
+              ⬇️ Download CSV
+            </Button>
+          </div>
+
           <div className="overflow-x-auto rounded shadow mb-6">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-100">
@@ -154,37 +168,12 @@ const MediumTerm = () => {
           </div>
 
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-300 rounded">
-            <h3 className="text-lg font-semibold mb-2">🧑‍🧬 Smart Summary</h3>
+            <h3 className="text-lg font-semibold mb-2">🧠 Smart Summary</h3>
             <ul className="list-disc list-inside space-y-1">
               {generateSummary().map((line, idx) => (
                 <li key={idx}>{line}</li>
               ))}
             </ul>
-          </div>
-
-          <div className="mb-4">
-            <label className="font-semibold">View Chart For:</label>
-            <select
-              value={selectedChartSymbol}
-              onChange={(e) => setSelectedChartSymbol(e.target.value)}
-              className="border p-2 rounded ml-2"
-            >
-              {Object.keys(results).map((sym) => (
-                <option key={sym} value={sym}>{sym}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="mb-4 flex items-center gap-4">
-            <label className="font-semibold">Chart Mode:</label>
-            <select
-              value={showConfidence ? "confidence" : "prediction"}
-              onChange={(e) => setShowConfidence(e.target.value === "confidence")}
-              className="border p-2 rounded"
-            >
-              <option value="prediction">Prediction Only</option>
-              <option value="confidence">Prediction + Confidence Bands</option>
-            </select>
           </div>
 
           {selectedChartSymbol && results[selectedChartSymbol] && results[selectedChartSymbol].chartBase64 && (
