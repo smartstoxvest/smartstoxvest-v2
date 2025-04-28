@@ -70,51 +70,51 @@ def predict_lstm(symbol: str, period: str = "2y", lookback: int = 60, future_day
         scaler = MinMaxScaler(feature_range=(0, 1))
         scaled_data = scaler.fit_transform(data)
 
-    X, y = [], []
-    for i in range(lookback, len(scaled_data)):
-        X.append(scaled_data[i - lookback:i, 0])
-        y.append(scaled_data[i, 0])
-    X, y = np.array(X), np.array(y)
-    X = np.reshape(X, (X.shape[0], X.shape[1], 1))
+        X, y = [], []
+        for i in range(lookback, len(scaled_data)):
+            X.append(scaled_data[i - lookback:i, 0])
+            y.append(scaled_data[i, 0])
+        X, y = np.array(X), np.array(y)
+        X = np.reshape(X, (X.shape[0], X.shape[1], 1))
 
-    if len(X) < 1:
-        return None, "Not enough data to train the model."
+        if len(X) < 1:
+            return None, "Not enough data to train the model."
 
-    model = Sequential([
-        LSTM(units=50, return_sequences=True, input_shape=(X.shape[1], 1)),
-        Dropout(0.2),
-        LSTM(units=50),
-        Dropout(0.2),
-        Dense(units=1)
-    ])
+        model = Sequential([
+            LSTM(units=50, return_sequences=True, input_shape=(X.shape[1], 1)),
+            Dropout(0.2),
+            LSTM(units=50),
+            Dropout(0.2),
+            Dense(units=1)
+        ])
 
-    model.compile(optimizer='adam', loss='mean_squared_error')
+        model.compile(optimizer='adam', loss='mean_squared_error')
 
-    early_stop = EarlyStopping(monitor='loss', patience=3, restore_best_weights=True)
+        early_stop = EarlyStopping(monitor='loss', patience=3, restore_best_weights=True)
 
-    model.fit(X, y, epochs=10, batch_size=32, verbose=0, callbacks=[early_stop])
+        model.fit(X, y, epochs=10, batch_size=32, verbose=0, callbacks=[early_stop])
 
-    input_seq = scaled_data[-lookback:, 0].reshape(1, lookback, 1)
+        input_seq = scaled_data[-lookback:, 0].reshape(1, lookback, 1)
 
 
-    predictions = []
-    for _ in range(future_days):
-        pred = model.predict(input_seq, verbose=0)
-        predictions.append(pred[0][0])
-        input_seq = np.concatenate([input_seq[:, 1:, :], np.expand_dims(pred, axis=1)], axis=1)
+        predictions = []
+        for _ in range(future_days):
+            pred = model.predict(input_seq, verbose=0)
+            predictions.append(pred[0][0])
+            input_seq = np.concatenate([input_seq[:, 1:, :], np.expand_dims(pred, axis=1)], axis=1)
 
-    predicted_prices = scaler.inverse_transform(np.array(predictions).reshape(-1, 1)).flatten().tolist()
+        predicted_prices = scaler.inverse_transform(np.array(predictions).reshape(-1, 1)).flatten().tolist()
 
-    upper_bounds = [round(p * 1.01, 2) for p in predicted_prices]
-    lower_bounds = [round(p * 0.99, 2) for p in predicted_prices]
+        upper_bounds = [round(p * 1.01, 2) for p in predicted_prices]
+        lower_bounds = [round(p * 0.99, 2) for p in predicted_prices]
 
-    summary = summarize_predictions(predicted_prices)
-    loss = model.evaluate(X, y, verbose=0)
-    confidence = round(100 - loss * 100, 2)
+        summary = summarize_predictions(predicted_prices)
+        loss = model.evaluate(X, y, verbose=0)
+        confidence = round(100 - loss * 100, 2)
 
-    chart_base64 = generate_chart(symbol, predicted_prices, upper_bounds, lower_bounds)
-    current_price = round(df['Close'].iloc[-1], 2)  # fetch last close price
-    return predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds, current_price
+        chart_base64 = generate_chart(symbol, predicted_prices, upper_bounds, lower_bounds)
+        current_price = round(df['Close'].iloc[-1], 2)  # fetch last close price
+        return predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds, current_price
 
 
 def generate_chart(symbol, predicted_prices, upper_bounds=None, lower_bounds=None):
