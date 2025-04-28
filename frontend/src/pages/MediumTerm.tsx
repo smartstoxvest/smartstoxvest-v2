@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+
+
 interface PredictionData {
   predictedPrice?: number;
   chartBase64?: string;
@@ -25,6 +27,19 @@ const MediumTerm = () => {
   const [showConfidence, setShowConfidence] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
 
+  const currencySymbol = (exchange: string) => {
+    switch (exchange) {
+      case "LSE":
+        return "£";
+      case "NSE":
+      case "BSE":
+        return "₹";
+      case "HKEX":
+        return "HK$";
+      default:
+        return "$";
+    }
+   
   const fetchPredictions = async () => {
     setLoading(true);
     try {
