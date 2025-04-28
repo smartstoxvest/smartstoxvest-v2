@@ -19,7 +19,7 @@ interface PredictionData {
 }
 
 const MediumTerm = () => {
-  const [symbols, setSymbols] = useState("AAPL");
+  const [symbols, setSymbols] = useState("AAPL,TSLA");
   const [exchange, setExchange] = useState("NASDAQ");
   const [assetType, setAssetType] = useState("Stock");
   const [results, setResults] = useState<{ [symbol: string]: PredictionData }>({});
