@@ -44,7 +44,8 @@ const MediumTerm = () => {
         epochs: 5,
         future_days: 30,
       });
-
+      console.log("🛜 API Response Data:", res.data);
+      
       const newResults: { [symbol: string]: PredictionData } = {};
       res.data.forEach((item: any) => {
         newResults[item.symbol] = item.error
