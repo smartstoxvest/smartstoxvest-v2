@@ -53,7 +53,7 @@ def summarize_predictions(predicted_prices):
 
 
 def predict_lstm(symbol: str, period: str = "2y", lookback: int = 60, future_days: int = 30):
-    print(f"[INFO] Running predict_lstm for {symbol}")
+    print(f"😏 Running predict_lstm for {symbol}")
     df = yf.download(symbol, period=period)
 
     if df.empty:
