@@ -186,10 +186,6 @@ const MediumTerm = () => {
                   </tr>
                 ))}
               </tbody>
-
-                  </tr>
-                ))}
-              </tbody>
             </table>
           </div>
 
