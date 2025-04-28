@@ -14,54 +14,42 @@ class MediumTermRequest(BaseModel):
 
 @router.post("/predict")
 async def predict_medium_term(data: MediumTermRequest):
-    symbol_list = [s.strip().upper() for s in data.symbol.split(",")]
-    all_predictions = []
+    print("📥 Incoming medium-term request:", data.dict())
 
-    for symbol in symbol_list:
-        print(f"🔥 Predicting for: {symbol}")
-        result = predict_lstm(
-            symbol=symbol,
-            period=data.period,
-            future_days=data.future_days
-        )
+    # Directly use symbol, exchange if needed later
+    symbol_with_suffix = data.symbol  # No suffix attached for now
 
-        # 🚨 SAFETY CHECK
-        if result is None or (isinstance(result, tuple) and len(result) == 2):
-            error_message = result[1] if isinstance(result, tuple) and len(result) == 2 else "Unknown Error"
-            all_predictions.append({
-                "symbol": symbol,
-                "error": error_message
-            })
-            continue
+    predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds = predict_lstm(
+        symbol=symbol_with_suffix,
+        period=data.period,
+        future_days=data.future_days
+    )
 
-        # ✅ UNPACK
-        predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds, current_price = result
+    if predicted_prices is None:
+        return {"error": confidence}
 
-        chart_data = [
-            {
-                "day": i + 1,
-                "price": float(predicted_prices[i]),
-                "upper": float(upper_bounds[i]),
-                "lower": float(lower_bounds[i])
-            }
-            for i in range(len(predicted_prices))
-        ]
+    chart_data = [
+        {
+            "day": i + 1,
+            "price": float(predicted_prices[i]),
+            "upper": float(upper_bounds[i]),
+            "lower": float(lower_bounds[i])
+        }
+        for i in range(len(predicted_prices))
+    ]
 
-        all_predictions.append({
-            "symbol": symbol,
-            "predicted_prices": predicted_prices,
-            "future_days": data.future_days,
-            "trend": summary["trend"],
-            "recommendation": summary["recommendation"],
-            "percentage_change": summary["percentage_change"],
-            "start_price": summary["start_price"],
-            "end_price": summary["end_price"],
-            "current_price": current_price,
-            "chart_data": chart_data,
-            "confidence": f"{confidence}%",
-            "chart_base64": chart_base64,
-            "upper_bounds": upper_bounds,
-            "lower_bounds": lower_bounds
-        })
-
-    return all_predictions   # ✅ (no comma here! 🚨)
+    return {
+        "symbol": data.symbol,
+        "predicted_prices": predicted_prices,
+        "future_days": data.future_days,
+        "trend": summary["trend"],
+        "recommendation": summary["recommendation"],
+        "percentage_change": summary["percentage_change"],
+        "start_price": summary["start_price"],
+        "end_price": summary["end_price"],
+        "chart_data": chart_data,
+        "confidence": f"{confidence}%",
+        "chart_base64": chart_base64,
+        "upper_bounds": upper_bounds,
+        "lower_bounds": lower_bounds
+    }
