@@ -15,19 +15,17 @@ class MediumTermRequest(BaseModel):
 @router.post("/predict")
 async def predict_medium_term(data: MediumTermRequest):
     symbol_list = [s.strip().upper() for s in data.symbol.split(",")]
-
     all_predictions = []
 
     for symbol in symbol_list:
         print(f"🔥 Predicting for: {symbol}")
-
         result = predict_lstm(
             symbol=symbol,
             period=data.period,
             future_days=data.future_days
         )
 
-        # 🚨 SAFETY CHECK FIRST
+        # 🚨 SAFETY CHECK
         if result is None or (isinstance(result, tuple) and len(result) == 2):
             error_message = result[1] if isinstance(result, tuple) and len(result) == 2 else "Unknown Error"
             all_predictions.append({
@@ -36,7 +34,7 @@ async def predict_medium_term(data: MediumTermRequest):
             })
             continue
 
-        # Now safe to unpack
+        # ✅ UNPACK
         predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds, current_price = result
 
         chart_data = [
@@ -66,4 +64,4 @@ async def predict_medium_term(data: MediumTermRequest):
             "lower_bounds": lower_bounds
         })
 
-    return all_predictions
+    return all_predictions   # ✅ (no comma here! 🚨)
