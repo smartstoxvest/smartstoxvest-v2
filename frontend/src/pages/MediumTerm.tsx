@@ -39,7 +39,7 @@ const MediumTerm = () => {
       default:
         return "$";
     }
-   
+   }; 
   const fetchPredictions = async () => {
     setLoading(true);
     try {
