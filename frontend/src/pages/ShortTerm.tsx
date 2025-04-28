@@ -16,16 +16,17 @@ interface ShortTermResult {
   stop_loss?: number;
   take_profit?: number;
   decision?: string;
-  final_decision?: string;   // ✅ Add this line
+  final_decision?: string;   // ✅ Pull final_decision from backend
   news_sentiment?: string;
 }
 
-
+// ✅ Updated - properly handle final_decision
 const getBadgeClass = (finalDecision: string) => {
-  if (finalDecision.includes("Invest Strongly")) return "bg-green-500 text-white";
+  if (finalDecision.includes("Invest Strongly")) return "bg-green-600 text-white";
   if (finalDecision.includes("Invest")) return "bg-green-400 text-white";
-  if (finalDecision.includes("Hold")) return "bg-yellow-400 text-black";
-  return "bg-red-500 text-white";
+  if (finalDecision.includes("Review Further") || finalDecision.includes("Hold Carefully")) return "bg-yellow-400 text-black";
+  if (finalDecision.includes("Hold") || finalDecision.includes("Avoid")) return "bg-red-500 text-white";
+  return "bg-gray-400 text-white"; // fallback
 };
 
 const ShortTerm = () => {
@@ -37,15 +38,10 @@ const ShortTerm = () => {
 
   const currencySymbol = (exchange: string) => {
     switch (exchange) {
-      case "LSE":
-        return "£";
-      case "NSE":
-      case "BSE":
-        return "₹";
-      case "HKEX":
-        return "HK$";
-      default:
-        return "$";
+      case "LSE": return "£";
+      case "NSE": case "BSE": return "₹";
+      case "HKEX": return "HK$";
+      default: return "$";
     }
   };
 
@@ -58,7 +54,6 @@ const ShortTerm = () => {
         asset_type: assetType,
         risk_tolerance: 1.0,
       });
-
       setResults(response.data);
     } catch (error) {
       console.error("Short-term analysis failed:", error);
@@ -72,7 +67,7 @@ const ShortTerm = () => {
       "Symbol,Current Price,Predicted Price,RSI,Volatility,Stop Loss,Take Profit,Decision,News Sentiment,Final Decision",
     ];
     const rows = results.map((r) =>
-    `${r.symbol},${r.current_price},${r.predicted_price},${r.rsi},${r.volatility},${r.stop_loss},${r.take_profit},${r.decision},${r.news_sentiment},${r.final_decision}`
+      `${r.symbol},${r.current_price},${r.predicted_price},${r.rsi},${r.volatility},${r.stop_loss},${r.take_profit},${r.decision},${r.news_sentiment},${r.final_decision}`
     );
     const csvContent = [...headers, ...rows].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
