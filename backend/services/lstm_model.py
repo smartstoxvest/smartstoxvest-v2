@@ -88,7 +88,8 @@ def predict_lstm(symbol: str, period: str = "2y", lookback: int = 60, future_day
 
     model.fit(X, y, epochs=10, batch_size=32, verbose=0, callbacks=[early_stop])
 
-    input_seq = scaled_data[-lookback:].reshape(1, lookback, 1)
+    input_seq = scaled_data[-lookback:, 0].reshape(1, lookback, 1)
+
 
     predictions = []
     for _ in range(future_days):
