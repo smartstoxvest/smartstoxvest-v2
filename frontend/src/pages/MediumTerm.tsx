@@ -164,9 +164,9 @@ const MediumTerm = () => {
                     <td className="px-4 py-2 font-semibold">{symbol}</td>
 
                     {/* 🚨 Check if it's an error */}
-                    {"error" in data ? (
+                    {"error" in (data as any) ? (
                       <td colSpan={3} className="px-4 py-2 text-red-500 font-semibold">
-                        ⚠️ {data.error}
+                        ⚠️ {(data as any).error}
                       </td>
                     ) : (
                       <>
@@ -178,7 +178,7 @@ const MediumTerm = () => {
                           {data.recommendation === "Buy"
                             ? "✅ Buy"
                             : data.recommendation === "Sell"
-                              ? "❌ Sell"
+                            ? "❌ Sell"
                             : "⚠️ Hold"}
                         </td>
                       </>
@@ -186,7 +186,6 @@ const MediumTerm = () => {
                   </tr>
                 ))}
               </tbody>
-
 
                   </tr>
                 ))}
