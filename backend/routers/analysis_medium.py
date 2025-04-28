@@ -58,6 +58,7 @@ async def predict_medium_term(data: MediumTermRequest):
             "percentage_change": summary["percentage_change"],
             "start_price": summary["start_price"],
             "end_price": summary["end_price"],
+            "current_price": current_price,
             "chart_data": chart_data,
             "confidence": f"{confidence}%",
             "chart_base64": chart_base64,
