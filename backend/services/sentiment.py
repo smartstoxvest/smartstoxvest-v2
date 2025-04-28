@@ -5,7 +5,8 @@ from textblob import TextBlob
 def fetch_news(stock):
     api_key = os.getenv("NEWS_API_KEY")
     if not api_key:
-        return []
+        print("⚠️ NEWS_API_KEY is missing! Defaulting to no news for:", stock)
+        return None  # Updated from [] to None
 
     url = f"https://newsapi.org/v2/everything?q={stock}&sortBy=publishedAt&apiKey={api_key}"
     try:
@@ -15,13 +16,17 @@ def fetch_news(stock):
         return articles[:5]
     except Exception as e:
         print(f"⚠️ Failed to fetch news for {stock}: {e}")
-        return []
+        return None  # Updated from [] to None
 
 def analyze_sentiment(text):
     return TextBlob(text).sentiment.polarity
 
 def get_news_decision(stock):
     articles = fetch_news(stock)
+    if articles is None:
+        # No API Key or API failed -> Safe fallback
+        return "🟡 Neutral News - Hold", 0
+
     scores = [analyze_sentiment((a.get("title") or "") + " " + (a.get("description") or "")) for a in articles]
     avg_score = sum(scores) / len(scores) if scores else 0
 
