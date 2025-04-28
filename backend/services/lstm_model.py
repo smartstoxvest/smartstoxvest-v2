@@ -52,17 +52,23 @@ def summarize_predictions(predicted_prices):
     return summary
 
 
-def predict_lstm(symbol: str, period: str = "2y", lookback: int = 60, future_days: int = 30):
-    print(f"😏 Running predict_lstm for {symbol}")
-    df = yf.download(symbol, period=period)
+    def predict_lstm(symbol: str, period: str = "2y", lookback: int = 60, future_days: int = 30):
+        print(f"🛠 predict_lstm: Running prediction for {symbol}")
+        df = yf.download(symbol, period=period)
 
-    if df.empty:
-        return None, "No data found."
+        if df.empty:
+            print(f"❌ No data found for {symbol}")
+            return None, "No data found."
 
-    data = df[['Close']].dropna()
+        data = df[['Close']].dropna()
 
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    scaled_data = scaler.fit_transform(data)
+        if data.empty or len(data) < lookback:
+            print(f"❌ Not enough data for {symbol}. Found {len(data)} rows, need at least {lookback}.")
+            return None, "Not enough data to train the model."
+
+        # Proceed safely after validation
+        scaler = MinMaxScaler(feature_range=(0, 1))
+        scaled_data = scaler.fit_transform(data)
 
     X, y = [], []
     for i in range(lookback, len(scaled_data)):
