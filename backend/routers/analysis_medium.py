@@ -37,7 +37,7 @@ async def predict_medium_term(data: MediumTermRequest):
             continue
 
         # Now safe to unpack
-        predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds = result
+        predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds, current_price = result
 
         chart_data = [
             {
