@@ -21,6 +21,7 @@ const MediumTerm = () => {
   const [assetType, setAssetType] = useState("Stock");
   const [results, setResults] = useState<{ [symbol: string]: PredictionData }>({});
   const [selectedChartSymbol, setSelectedChartSymbol] = useState<string>("");
+  const [showConfidence, setShowConfidence] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
 
   const currencySymbol = (exchange: string) => {
@@ -44,8 +45,7 @@ const MediumTerm = () => {
         epochs: 5,
         future_days: 30,
       });
-      console.log("🛜 API Response Data:", res.data);
-      
+
       const newResults: { [symbol: string]: PredictionData } = {};
       res.data.forEach((item: any) => {
         newResults[item.symbol] = item.error
@@ -180,7 +180,7 @@ const MediumTerm = () => {
             <LSTMChart
               base64Image={results[selectedChartSymbol].chartBase64!}
               symbol={selectedChartSymbol}
-              
+              showConfidence={showConfidence}
             />
           )}
         </>
