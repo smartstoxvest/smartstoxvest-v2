@@ -16,35 +16,10 @@ interface ShortTermResult {
   stop_loss?: number;
   take_profit?: number;
   decision?: string;
+  final_decision?: string;   // ✅ Add this line
   news_sentiment?: string;
 }
 
-const cleanDecision = (text?: string) => {
-  if (!text) return "";
-  return text.replace(/[^\w\s()-]/g, "").replace(/\s+/g, " ").trim();
-};
-
-const getFinalDecision = (decision?: string, news_sentiment?: string) => {
-  const sentiment = news_sentiment?.toLowerCase() || "";
-  const cleanedDecision = cleanDecision(decision);
-
-  if (cleanedDecision === "Invest" || cleanedDecision.includes("Invest")) {
-    if (sentiment.includes("positive")) {
-      return "🚀 Invest Strongly";
-    } else if (sentiment.includes("neutral")) {
-      return "✅ Invest";
-    } else {
-      return "✅ Invest";
-    }
-  } else if (cleanedDecision === "Hold") {
-    if (sentiment.includes("positive")) {
-      return "🤔 Hold Carefully";
-    } else {
-      return "🤔 Hold";
-    }
-  }
-  return "❌ Avoid";
-};
 
 const getBadgeClass = (finalDecision: string) => {
   if (finalDecision.includes("Invest Strongly")) return "bg-green-500 text-white";
@@ -97,7 +72,7 @@ const ShortTerm = () => {
       "Symbol,Current Price,Predicted Price,RSI,Volatility,Stop Loss,Take Profit,Decision,News Sentiment,Final Decision",
     ];
     const rows = results.map((r) =>
-      `${r.symbol},${r.current_price},${r.predicted_price},${r.rsi},${r.volatility},${r.stop_loss},${r.take_profit},${r.decision},${r.news_sentiment},${getFinalDecision(r.decision, r.news_sentiment)}`
+    `${r.symbol},${r.current_price},${r.predicted_price},${r.rsi},${r.volatility},${r.stop_loss},${r.take_profit},${r.decision},${r.news_sentiment},${r.final_decision}`
     );
     const csvContent = [...headers, ...rows].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -189,7 +164,7 @@ const ShortTerm = () => {
               </thead>
               <tbody>
                 {results.map((res) => {
-                  const finalDecision = getFinalDecision(res.decision, res.news_sentiment);
+                  const finalDecision = res.final_decision || "❓ Unknown";
                   return (
                     <tr key={res.symbol} className="border-t">
                       <td className="p-3 font-bold">{res.symbol}</td>
