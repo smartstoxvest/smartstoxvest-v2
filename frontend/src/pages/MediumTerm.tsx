@@ -179,7 +179,7 @@ const MediumTerm = () => {
             <LSTMChart
               base64Image={results[selectedChartSymbol].chartBase64!}
               symbol={selectedChartSymbol}
-              showConfidence={showConfidence}
+              
             />
           )}
         </>
