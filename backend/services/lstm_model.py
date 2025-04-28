@@ -6,6 +6,7 @@ import pandas as pd
 import yfinance as yf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM, Dropout
+from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.preprocessing import MinMaxScaler
 
 def prepare_lstm_data(df, look_back=60):
@@ -23,9 +24,8 @@ def prepare_lstm_data(df, look_back=60):
     x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
 
     return x_train, y_train, scaler, df_close
-    
-    
-    
+
+
 def summarize_predictions(predicted_prices):
     start_price = predicted_prices[0]
     end_price = predicted_prices[-1]
@@ -52,44 +52,43 @@ def summarize_predictions(predicted_prices):
     return summary
 
 
-
 def predict_lstm(symbol: str, period: str = "2y", lookback: int = 60, future_days: int = 30):
-    print("🛠 predict_lstm: I am the UPDATED 6-returns version!")
+    print(f"\ud83d\udee0\ufe0f Running predict_lstm for {symbol}")
     df = yf.download(symbol, period=period)
-    
+
     if df.empty:
         return None, "No data found."
 
     data = df[['Close']].dropna()
-    
-    # Normalize the data
+
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(data)
 
-    # Prepare training sequences
     X, y = [], []
     for i in range(lookback, len(scaled_data)):
-        X.append(scaled_data[i - lookback:i])
-        y.append(scaled_data[i])
+        X.append(scaled_data[i - lookback:i, 0])
+        y.append(scaled_data[i, 0])
     X, y = np.array(X), np.array(y)
+    X = np.reshape(X, (X.shape[0], X.shape[1], 1))
 
     if len(X) < 1:
         return None, "Not enough data to train the model."
 
-    # Build the model
-    model = Sequential()
-    model.add(LSTM(units=50, return_sequences=True, input_shape=(X.shape[1], 1)))
-    model.add(Dropout(0.2))
-    model.add(LSTM(units=50))
-    model.add(Dropout(0.2))
-    model.add(Dense(units=1))
+    model = Sequential([
+        LSTM(units=50, return_sequences=True, input_shape=(X.shape[1], 1)),
+        Dropout(0.2),
+        LSTM(units=50),
+        Dropout(0.2),
+        Dense(units=1)
+    ])
 
     model.compile(optimizer='adam', loss='mean_squared_error')
-    model.fit(X, y, epochs=5, batch_size=32, verbose=0)
 
-    # Predict the next 'future_days'
-    input_seq = scaled_data[-lookback:]
-    input_seq = input_seq.reshape(1, lookback, 1)
+    early_stop = EarlyStopping(monitor='loss', patience=3, restore_best_weights=True)
+
+    model.fit(X, y, epochs=10, batch_size=32, verbose=0, callbacks=[early_stop])
+
+    input_seq = scaled_data[-lookback:].reshape(1, lookback, 1)
 
     predictions = []
     for _ in range(future_days):
@@ -97,20 +96,17 @@ def predict_lstm(symbol: str, period: str = "2y", lookback: int = 60, future_day
         predictions.append(pred[0][0])
         input_seq = np.concatenate([input_seq[:, 1:, :], np.expand_dims(pred, axis=1)], axis=1)
 
+    predicted_prices = scaler.inverse_transform(np.array(predictions).reshape(-1, 1)).flatten().tolist()
 
-
-    predicted_prices = scaler.inverse_transform(np.array(predictions).reshape(-1, 1)).flatten()
-
-    predicted_prices = predicted_prices.tolist()
-    # Add ±1% confidence bounds (just for now)
     upper_bounds = [round(p * 1.01, 2) for p in predicted_prices]
     lower_bounds = [round(p * 0.99, 2) for p in predicted_prices]
+
     summary = summarize_predictions(predicted_prices)
-    # ✅ Simulate confidence based on loss (lower loss = higher confidence)
     loss = model.evaluate(X, y, verbose=0)
-    confidence = round(100 - loss * 100, 2)  # simulate as 100% - error %
+    confidence = round(100 - loss * 100, 2)
 
     chart_base64 = generate_chart(symbol, predicted_prices, upper_bounds, lower_bounds)
+
     return predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds
 
 
@@ -136,6 +132,3 @@ def generate_chart(symbol, predicted_prices, upper_bounds=None, lower_bounds=Non
     plt.close()
 
     return chart_base64
-
-
-
