@@ -59,7 +59,8 @@ def predict_lstm(symbol: str, period: str = "2y", lookback: int = 60, future_day
     
     if df.empty:
         return None, "No data found."
-
+        
+    current_price = df['Close'].iloc[-1]
     data = df[['Close']].dropna()
     
     # Normalize the data
@@ -111,7 +112,7 @@ def predict_lstm(symbol: str, period: str = "2y", lookback: int = 60, future_day
     confidence = round(100 - loss * 100, 2)  # simulate as 100% - error %
 
     chart_base64 = generate_chart(symbol, predicted_prices, upper_bounds, lower_bounds)
-    return predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds
+    return predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds, current_price
 
 
 def generate_chart(symbol, predicted_prices, upper_bounds=None, lower_bounds=None):
