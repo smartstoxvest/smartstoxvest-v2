@@ -19,16 +19,25 @@ async def predict_medium_term(data: MediumTermRequest):
     all_predictions = []
 
     for symbol in symbol_list:
-        print("🔥 analysis_medium.py: Calling predict_lstm() NOW")
-        predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds = predict_lstm(
+        print(f"🔥 Predicting for: {symbol}")
+
+        result = predict_lstm(
             symbol=symbol,
             period=data.period,
             future_days=data.future_days
         )
 
-        if predicted_prices is None:
-            all_predictions.append({"symbol": symbol, "error": confidence})
+        # 🚨 SAFETY CHECK FIRST
+        if result is None or (isinstance(result, tuple) and len(result) == 2):
+            error_message = result[1] if isinstance(result, tuple) and len(result) == 2 else "Unknown Error"
+            all_predictions.append({
+                "symbol": symbol,
+                "error": error_message
+            })
             continue
+
+        # Now safe to unpack
+        predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds = result
 
         chart_data = [
             {
@@ -57,4 +66,3 @@ async def predict_medium_term(data: MediumTermRequest):
         })
 
     return all_predictions
-
