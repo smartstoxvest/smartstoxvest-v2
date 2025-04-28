@@ -1,4 +1,5 @@
 // src/pages/MediumTerm.tsx
+
 import { useState } from "react";
 import axios from "axios";
 import LSTMChart from "@/components/LSTMChart";
@@ -7,11 +8,12 @@ import { Button } from "@/components/ui/button";
 const API_URL = import.meta.env.VITE_API_URL;
 
 interface PredictionData {
-  predictedPrice: number;
-  chartBase64: string;
-  confidenceLow: number;
-  confidenceHigh: number;
-  recommendation: string;
+  predictedPrice?: number;
+  chartBase64?: string;
+  confidenceLow?: number;
+  confidenceHigh?: number;
+  recommendation?: string;
+  error?: string;
 }
 
 const MediumTerm = () => {
@@ -32,7 +34,7 @@ const MediumTerm = () => {
         .filter(Boolean);
 
       const res = await axios.post(`${API_URL}/medium/predict`, {
-        symbol: symbols, // Comma-separated
+        symbol: symbols,
         exchange,
         asset_type: assetType,
         period: "2y",
@@ -41,19 +43,16 @@ const MediumTerm = () => {
       });
 
       const newResults: { [symbol: string]: PredictionData } = {};
-
       res.data.forEach((item: any) => {
-        if (item.error) {
-          console.warn(`⚠️ Prediction failed for ${item.symbol}: ${item.error}`);
-        } else {
-          newResults[item.symbol] = {
-            predictedPrice: item.end_price ?? 0,
-            chartBase64: item.chart_base64,
-            confidenceLow: item.lower_bounds[0] ?? 0,
-            confidenceHigh: item.upper_bounds[0] ?? 0,
-            recommendation: item.recommendation ?? "Hold",
-          };
-        }
+        newResults[item.symbol] = item.error
+          ? { error: item.error }
+          : {
+              predictedPrice: item.end_price ?? 0,
+              chartBase64: item.chart_base64,
+              confidenceLow: item.lower_bounds[0] ?? 0,
+              confidenceHigh: item.upper_bounds[0] ?? 0,
+              recommendation: item.recommendation ?? "Hold",
+            };
       });
 
       setResults(newResults);
@@ -66,12 +65,14 @@ const MediumTerm = () => {
     }
   };
 
-
   const generateSummary = () => {
     return Object.entries(results).map(([symbol, data]) => {
-      const spread = data.confidenceHigh - data.confidenceLow;
+      if (data.error) {
+        return `⚠️ ${symbol}: ${data.error}`;
+      }
+      const spread = (data.confidenceHigh ?? 0) - (data.confidenceLow ?? 0);
       const confidenceStrength = spread <= 10 ? "high confidence" : "moderate confidence";
-      const trend = data.predictedPrice > data.confidenceHigh - 2 ? "rising" : "stable";
+      const trend = (data.predictedPrice ?? 0) > (data.confidenceHigh ?? 0) - 2 ? "rising" : "stable";
       const trendIcon = trend === "rising" ? "🔼" : "➖";
       const recIcon = data.recommendation === "Buy" ? "✅" : data.recommendation === "Sell" ? "❌" : "⚠️";
       return `${trendIcon} ${symbol} is predicted to be ${trend} with ${confidenceStrength}. ${recIcon} Action: ${data.recommendation}.`;
@@ -79,9 +80,9 @@ const MediumTerm = () => {
   };
 
   const downloadCSV = () => {
-    const headers = ["Symbol,Predicted Price,Confidence Low,Confidence High,Recommendation"];
+    const headers = ["Symbol,Predicted Price,Confidence Low,Confidence High,Recommendation,Error"];
     const rows = Object.entries(results).map(([symbol, data]) =>
-      `${symbol},${data.predictedPrice},${data.confidenceLow},${data.confidenceHigh},${data.recommendation}`
+      `${symbol},${data.predictedPrice ?? ""},${data.confidenceLow ?? ""},${data.confidenceHigh ?? ""},${data.recommendation ?? ""},${data.error ?? ""}`
     );
     const csvContent = [...headers, ...rows].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -162,18 +163,12 @@ const MediumTerm = () => {
                 {Object.entries(results).map(([symbol, data]) => (
                   <tr key={symbol} className="border-t">
                     <td className="px-4 py-2 font-semibold">{symbol}</td>
-
-                    {/* 🚨 Check if it's an error */}
-                    {"error" in (data as any) ? (
-                      <td colSpan={3} className="px-4 py-2 text-red-500 font-semibold">
-                        ⚠️ {(data as any).error}
-                      </td>
+                    {data.error ? (
+                      <td colSpan={3} className="px-4 py-2 text-red-500 font-semibold">⚠️ {data.error}</td>
                     ) : (
                       <>
                         <td className="px-4 py-2">${data.predictedPrice}</td>
-                        <td className="px-4 py-2">
-                          ${data.confidenceLow} – ${data.confidenceHigh}
-                        </td>
+                        <td className="px-4 py-2">${data.confidenceLow} – ${data.confidenceHigh}</td>
                         <td className="px-4 py-2">
                           {data.recommendation === "Buy"
                             ? "✅ Buy"
@@ -189,7 +184,7 @@ const MediumTerm = () => {
             </table>
           </div>
 
-          {/* Smart Summary Section */}
+          {/* Smart Summary */}
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-300 rounded">
             <h3 className="text-lg font-semibold mb-2">🧠 Smart Summary</h3>
             <ul className="list-disc list-inside space-y-1">
@@ -215,6 +210,7 @@ const MediumTerm = () => {
             </select>
           </div>
 
+          {/* Chart Mode */}
           <div className="mb-4 flex items-center gap-4">
             <label className="font-semibold">Chart Mode:</label>
             <select
@@ -228,9 +224,9 @@ const MediumTerm = () => {
           </div>
 
           {/* Render Chart */}
-          {selectedChartSymbol && results[selectedChartSymbol] && (
+          {selectedChartSymbol && results[selectedChartSymbol] && results[selectedChartSymbol].chartBase64 && (
             <LSTMChart
-              base64Image={results[selectedChartSymbol].chartBase64}
+              base64Image={results[selectedChartSymbol].chartBase64!}
               symbol={selectedChartSymbol}
               showConfidence={showConfidence}
             />
