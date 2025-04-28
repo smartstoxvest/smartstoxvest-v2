@@ -162,20 +162,31 @@ const MediumTerm = () => {
                 {Object.entries(results).map(([symbol, data]) => (
                   <tr key={symbol} className="border-t">
                     <td className="px-4 py-2 font-semibold">{symbol}</td>
-                    <td className="px-4 py-2">${data.predictedPrice}</td>
-                    <td className="px-4 py-2">
-                      ${data.confidenceLow} – ${data.confidenceHigh}
-                    </td>
-                    <td className="px-4 py-2">
-                      {data.recommendation === "Buy"
-                        ? "✅ Buy"
-                        : data.recommendation === "Sell"
-                        ? "❌ Sell"
-                        : "⚠️ Hold"}
-                    </td>
+
+                    {/* 🚨 Check if it's an error */}
+                    {"error" in data ? (
+                      <td colSpan={3} className="px-4 py-2 text-red-500 font-semibold">
+                        ⚠️ {data.error}
+                      </td>
+                    ) : (
+                      <>
+                        <td className="px-4 py-2">${data.predictedPrice}</td>
+                        <td className="px-4 py-2">
+                          ${data.confidenceLow} – ${data.confidenceHigh}
+                        </td>
+                        <td className="px-4 py-2">
+                          {data.recommendation === "Buy"
+                            ? "✅ Buy"
+                            : data.recommendation === "Sell"
+                              ? "❌ Sell"
+                            : "⚠️ Hold"}
+                        </td>
+                      </>
+                    )}
                   </tr>
                 ))}
               </tbody>
+
 
                   </tr>
                 ))}
