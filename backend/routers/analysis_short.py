@@ -13,6 +13,18 @@ class ShortTermRequest(BaseModel):
     asset_type: str
     risk_tolerance: float = 1.0
 
+# NEW: Smart suffix function
+def apply_exchange_suffix(symbol: str, exchange: str) -> str:
+    if exchange == "LSE" and not symbol.endswith(".L"):
+        return f"{symbol}.L"
+    if exchange == "NSE" and not symbol.endswith(".NS"):
+        return f"{symbol}.NS"
+    if exchange == "BSE" and not symbol.endswith(".BO"):
+        return f"{symbol}.BO"
+    if exchange == "HKEX" and not symbol.endswith(".HK"):
+        return f"{symbol}.HK"
+    return symbol
+
 @router.post("/api/short-term-predict")
 def short_term_predict(data: ShortTermRequest):
     try:
@@ -24,7 +36,11 @@ def short_term_predict(data: ShortTermRequest):
     results = []
 
     for symbol in symbol_list:
-        df = fetch_stock_data(symbol, "1y", data.exchange)
+        # NEW: Apply smart suffix before fetching
+        smart_symbol = apply_exchange_suffix(symbol, data.exchange)
+        print(f"🚀 Fetching short-term data for {smart_symbol} (original: {symbol})")
+
+        df = fetch_stock_data(smart_symbol, "1y", data.exchange)
 
         if df is None or df.empty or "Close" not in df.columns:
             results.append({"symbol": symbol, "error": "No data found"})
@@ -89,7 +105,7 @@ def short_term_predict(data: ShortTermRequest):
             final_decision = "🤔 Review Further"
 
         results.append({
-            "symbol": symbol,
+            "symbol": symbol,  # keep original symbol
             "current_price": round(current_price, 2),
             "predicted_price": round(predicted_price, 2),
             "rsi": round(rsi, 2),
