@@ -21,7 +21,7 @@ const MediumTerm = () => {
   const [assetType, setAssetType] = useState("Stock");
   const [results, setResults] = useState<{ [symbol: string]: PredictionData }>({});
   const [selectedChartSymbol, setSelectedChartSymbol] = useState<string>("");
-  const [showConfidence, setShowConfidence] = useState<boolean>(false);
+
   const [loading, setLoading] = useState(false);
 
   const currencySymbol = (exchange: string) => {
