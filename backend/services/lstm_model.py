@@ -52,7 +52,7 @@ def summarize_predictions(predicted_prices):
     return summary
 
 
-    def predict_lstm(symbol: str, period: str = "2y", lookback: int = 60, future_days: int = 30):
+def predict_lstm(symbol: str, period: str = "2y", lookback: int = 60, future_days: int = 30):
         print(f"🛠 predict_lstm: Running prediction for {symbol}")
         df = yf.download(symbol, period=period)
 
@@ -113,8 +113,8 @@ def summarize_predictions(predicted_prices):
     confidence = round(100 - loss * 100, 2)
 
     chart_base64 = generate_chart(symbol, predicted_prices, upper_bounds, lower_bounds)
-
-    return predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds
+    current_price = round(df['Close'].iloc[-1], 2)  # fetch last close price
+    return predicted_prices, summary, confidence, chart_base64, upper_bounds, lower_bounds, current_price
 
 
 def generate_chart(symbol, predicted_prices, upper_bounds=None, lower_bounds=None):
