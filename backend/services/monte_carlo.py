@@ -1,29 +1,6 @@
-import yfinance as yf
 import numpy as np
 import pandas as pd
 from typing import Dict
-
-# 🔥 Add Exchange Mapping
-exchange_suffix = {
-    "LSE": ".L",
-    "NASDAQ": "",
-    "NYSE": "",
-    "NSE": ".NS",
-    "Crypto": "-USD"
-}
-
-def fetch_stock_data(symbol: str, period: str = "5y", exchange: str = "NASDAQ") -> pd.DataFrame:
-    try:
-        symbol_with_suffix = symbol + exchange_suffix.get(exchange.upper(), "")
-        data = yf.download(symbol_with_suffix, period=period, progress=False)
-
-        if data.empty or "Close" not in data.columns:
-            return pd.DataFrame()
-
-        return data.dropna(subset=["Close"])
-    except Exception as e:
-        print(f"[ERROR] Failed to fetch data for {symbol}: {e}")
-        return pd.DataFrame()
 
 def monte_carlo_simulation(data: pd.DataFrame, period: str = "5y", simulations: int = 1000) -> Dict:
     returns = data['Close'].pct_change().dropna()
@@ -32,7 +9,7 @@ def monte_carlo_simulation(data: pd.DataFrame, period: str = "5y", simulations: 
     last_price = data['Close'].iloc[-1]
 
     years = int(period.replace("y", ""))
-    days = 252 * years  # Fix here
+    days = 252 * years
 
     simulation_data = np.zeros((days, simulations))
     simulation_data[0] = last_price
@@ -46,10 +23,25 @@ def monte_carlo_simulation(data: pd.DataFrame, period: str = "5y", simulations: 
     best_case = np.percentile(end_prices, 95)
     expected_return = np.mean(end_prices)
 
+    data['SMA200'] = data['Close'].rolling(window=200).mean()
+    sma200 = data['SMA200'].iloc[-1] if not data['SMA200'].isna().all() else None
+
+    rolling_vol = returns.rolling(window=60).std()
+    volatility = rolling_vol.iloc[-1] * np.sqrt(252) if not rolling_vol.isna().all() else None
+
+    if worst_case > last_price * 0.9:
+        decision = "Buy"
+    elif worst_case > last_price * 0.75:
+        decision = "Hold"
+    else:
+        decision = "Sell"
+
     return {
         "current_price": round(float(last_price), 2),
         "expected_return": round(float(expected_return), 2),
         "worst_case": round(float(worst_case), 2),
         "best_case": round(float(best_case), 2),
-        "decision": "Buy" if worst_case > last_price * 0.9 else ("Hold" if worst_case > last_price * 0.75 else "Sell")
+        "sma200": round(float(sma200), 2) if sma200 else None,
+        "volatility": round(float(volatility), 4) if volatility else None,
+        "decision": decision,
     }
