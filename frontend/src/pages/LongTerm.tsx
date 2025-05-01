@@ -1,180 +1,305 @@
-// src/pages/LongTerm.tsx
-import { useState } from "react";
-import axios from "axios";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
+import {
+  Chart as ChartJS,
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Legend,
+  Tooltip,
+  Filler,
+} from "chart.js";
+import { Line } from "react-chartjs-2";
 
-const API_URL = import.meta.env.VITE_API_URL;
+ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Legend, Tooltip, Filler);
 
-interface LongTermResult {
-  symbol: string;
-  current_price: number;
-  predicted_price: number;
-  worst_case: number;
-  best_case: number;
-  decision: string;
-}
-
-const LongTerm = () => {
-  const [symbols, setSymbols] = useState("AAPL");
-  const [exchange, setExchange] = useState("NASDAQ");
+const LongTerm: React.FC = () => {
   const [assetType, setAssetType] = useState("Stock");
-  const [results, setResults] = useState<LongTermResult[]>([]);
+  const [exchange, setExchange] = useState("NASDAQ");
+  const [symbols, setSymbols] = useState("");
+  const [response, setResponse] = useState<any>(null);
+  const [selectedStock, setSelectedStock] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [chartType, setChartType] = useState<"line" | "area">("line");
 
-  const fetchLongTerm = async () => {
+  const exchangeSuffix: Record<string, string> = {
+    LSE: ".L",
+    NASDAQ: "",
+    NYSE: "",
+    NSE: ".NS",
+    BSE: ".BO",
+    AMEX: "",
+    HKEX: ".HK",
+    Crypto: "-USD",
+  };
+
+  const currencySymbolMap: Record<string, string> = {
+    LSE: "£",
+    NASDAQ: "$",
+    NYSE: "$",
+    NSE: "₹",
+    BSE: "₹",
+    AMEX: "$",
+    HKEX: "HK$",
+    Crypto: "",
+  };
+
+  const currencySymbol = currencySymbolMap[exchange] || "$";
+
+  const stripSymbolSuffix = (symbol: string) =>
+    symbol.replace(/(\.L|\.NS|\.BO|\.HK|-USD)$/i, "");
+
+  const runLongTermAnalysis = async () => {
     setLoading(true);
+    setSelectedStock(null);
+    const stockList = symbols
+      .split(",")
+      .map((s) => s.trim().toUpperCase() + (exchangeSuffix[exchange] || ""));
+
     try {
-      const symbolsList = symbols
-        .split(",")
-        .map((s) => s.trim().toUpperCase())
-        .filter(Boolean);
-
-      const newResults: LongTermResult[] = [];
-
-      for (const symbol of symbolsList) {
-        const res = await axios.post(`${API_URL}/long/predict`, {
-          symbol,
-          exchange,
-          asset_type: assetType,
-          period: "5y",
+      const res = await fetch("http://localhost:8000/longterm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          symbols: stockList,
           simulations: 1000,
-        });
-
-        newResults.push({
-          symbol,
-          current_price: res.data.current_price ?? 0,
-          predicted_price: res.data.expected_return ?? 0,
-          worst_case: res.data.worst_case ?? 0,
-          best_case: res.data.best_case ?? 0,
-          decision: res.data.decision ?? "Hold",
-        });
-      }
-
-      setResults(newResults);
-    } catch (err: any) {
-      console.error("❌ Error fetching Long-Term Predictions:", err.response?.data || err.message || err);
-      alert("❌ Failed to fetch Long-Term Predictions. Please try again later.");
-    } finally {
-      setLoading(false);
+        }),
+      });
+      const data = await res.json();
+      setResponse(data);
+    } catch (error) {
+      console.error("API error", error);
     }
+    setLoading(false);
+  };
+
+  const generateChartData = (pricePaths: number[][]) => {
+    const datasets = pricePaths.slice(0, 50).map((path, idx) => ({
+      label: `Sim ${idx + 1}`,
+      data: path,
+      borderColor: "rgba(75,192,192,0.3)",
+      borderWidth: 1,
+      pointRadius: 0,
+      fill: chartType === "area" ? "origin" : false,
+    }));
+
+    return {
+      labels: Array.from({ length: pricePaths[0].length }, (_, i) => i + 1),
+      datasets,
+    };
   };
 
   const downloadCSV = () => {
-    const headers = ["Symbol,Current Price,Predicted,Worst Case,Best Case,Decision"];
-    const rows = results.map((r) =>
-      `${r.symbol},${r.current_price},${r.predicted_price},${r.worst_case},${r.best_case},${r.decision}`
-    );
-    const csvContent = [...headers, ...rows].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
+    if (!response?.results?.length) return;
+
+    const rows = [
+      [
+        "Symbol",
+        "Current Price",
+        "Predicted Price",
+        "SMA200",
+        "Volatility",
+        "Worst Case",
+        "Best Case",
+        "Expected Return (%)",
+        "Decision",
+      ],
+      ...response.results.map((res: any) => {
+        const expectedReturn = ((res.best_case - res.current_price) / res.current_price) * 100;
+        return [
+          stripSymbolSuffix(res.symbol),
+          res.current_price.toFixed(2),
+          res.predicted_price?.toFixed(2),
+          res.sma200?.toFixed(2),
+          res.volatility?.toFixed(4),
+          res.worst_case.toFixed(2),
+          res.best_case.toFixed(2),
+          expectedReturn.toFixed(2),
+          res.decision,
+        ];
+      }),
+    ];
+
+    const csvContent = "data:text/csv;charset=utf-8," + rows.map((e) => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "long_term_predictions.csv");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "long_term_summary.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const generateSummary = () => {
-    return results.map((r) => {
-      const spread = r.best_case - r.worst_case;
-      const riskLabel = spread < r.current_price * 0.2 ? "low risk" : spread < r.current_price * 0.4 ? "moderate risk" : "high risk";
-      const trend = r.predicted_price > r.current_price * 1.05 ? "expected to grow" : r.predicted_price < r.current_price * 0.95 ? "expected to decline" : "likely stable";
-      return `📌 ${r.symbol} is ${trend} with ${riskLabel}. Recommended action: ${r.decision}.`;
-    });
-  };
-
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">📉 Long-Term Risk Analysis</h1>
+    <div className="px-6 py-8">
+      <h1 className="text-4xl font-bold mb-8 flex items-center gap-3">
+        <span role="img">📉</span> Long-Term Risk Analysis
+      </h1>
 
-      {/* Form Controls */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <select
-          value={assetType}
-          onChange={(e) => setAssetType(e.target.value)}
-          className="border px-4 py-2 rounded-md w-full md:w-1/4"
+      <div className="max-w-2xl mx-auto flex flex-col space-y-6 mb-8">
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Select Asset Type</label>
+          <select
+            value={assetType}
+            onChange={(e) => setAssetType(e.target.value)}
+            className="w-full border p-2 rounded"
+          >
+            <option>Stock</option>
+            <option>ETF</option>
+            <option>Crypto</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Select Exchange</label>
+          <select
+            value={exchange}
+            onChange={(e) => setExchange(e.target.value)}
+            className="w-full border p-2 rounded"
+          >
+            <option>NASDAQ</option>
+            <option>NYSE</option>
+            <option>LSE</option>
+            <option>NSE</option>
+            <option>BSE</option>
+            <option>AMEX</option>
+            <option>HKEX</option>
+            <option>Crypto</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Enter Stock Symbols (comma separated)</label>
+          <input
+            className="w-full border p-2 rounded"
+            placeholder="e.g. TSLA, AAPL"
+            value={symbols}
+            onChange={(e) => setSymbols(e.target.value)}
+          />
+        </div>
+
+        <button
+          onClick={runLongTermAnalysis}
+          className="bg-blue-600 text-white px-6 py-2 rounded font-semibold hover:bg-blue-700 w-full md:w-auto"
         >
-          <option value="Stock">Stock</option>
-          <option value="ETF">ETF</option>
-          <option value="Crypto">Crypto</option>
-          <option value="Forex">Forex</option>
-        </select>
-
-        <select
-          value={exchange}
-          onChange={(e) => setExchange(e.target.value)}
-          className="border px-4 py-2 rounded-md w-full md:w-1/4"
-        >
-          <option value="NASDAQ">NASDAQ</option>
-          <option value="NYSE">NYSE</option>
-          <option value="LSE">LSE</option>
-          <option value="NSE">NSE</option>
-          <option value="BSE">BSE</option>
-          <option value="AMEX">AMEX</option>
-          <option value="HKEX">HKEX</option>
-          <option value="Crypto">Crypto</option>
-        </select>
-
-        <input
-          type="text"
-          value={symbols}
-          onChange={(e) => setSymbols(e.target.value)}
-          placeholder="e.g., AAPL, TSLA, GOOGL"
-          className="border px-4 py-2 rounded-md w-full md:flex-grow"
-        />
-
-        <Button onClick={fetchLongTerm} disabled={loading} className="w-full md:w-auto">
-          {loading ? "Analyzing..." : "Run Analysis"}
-        </Button>
+          Run Analysis
+        </button>
       </div>
 
-      {/* Results Table */}
-      {results.length > 0 && (
-        <>
-          <div className="flex justify-between items-center mb-6">
-            <Button onClick={downloadCSV} className="bg-green-600 text-white hover:bg-green-700">
-              ⬇️ Download CSV
-            </Button>
+      {loading && <p className="text-sm text-gray-600">⏳ Running Monte Carlo simulation...</p>}
+
+      {response?.results?.length > 0 && (
+        <div className="mt-10">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold flex items-center gap-1">
+              <span role="img">📋</span> Summary Table
+            </h3>
+            <button
+              onClick={downloadCSV}
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm"
+            >
+              Download CSV
+            </button>
           </div>
 
-          <div className="overflow-x-auto rounded-md shadow border mb-6">
-            <table className="min-w-full text-sm">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-4 py-2 text-left">Symbol</th>
-                  <th className="px-4 py-2 text-left">Current Price</th>
-                  <th className="px-4 py-2 text-left">Predicted</th>
-                  <th className="px-4 py-2 text-left">Worst Case</th>
-                  <th className="px-4 py-2 text-left">Best Case</th>
-                  <th className="px-4 py-2 text-left">Decision</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.map((r) => (
-                  <tr key={r.symbol} className="border-t">
-                    <td className="px-4 py-2 font-semibold">{r.symbol}</td>
-                    <td className="px-4 py-2">${r.current_price}</td>
-                    <td className="px-4 py-2">${r.predicted_price}</td>
-                    <td className="px-4 py-2">${r.worst_case}</td>
-                    <td className="px-4 py-2">${r.best_case}</td>
-                    <td className="px-4 py-2">{r.decision}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <div className="overflow-x-auto">
+			<table className="min-w-full text-sm text-center border rounded-md shadow-md">
+				<thead className="bg-blue-100 font-semibold">
+				<tr>
+					{[
+					"Symbol",
+					"Current",
+					"Worst Case",
+					"Best Case",
+					"Expected Return",
+					"SMA200",
+					"Volatility",
+					"Decision",
+					].map((header) => (
+					<th key={header} className="p-3">{header}</th>
+					))}
+				</tr>
+				</thead>
+				<tbody>
+					{response.results.map((res: any, idx: number) => {
+						const expectedReturn = ((res.best_case - res.current_price) / res.current_price) * 100;
 
-          {/* Smart Summary */}
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-300 rounded">
-            <h3 className="text-lg font-semibold mb-2">📌 Strategic Summary</h3>
-            <ul className="list-disc list-inside space-y-1">
-              {generateSummary().map((line, idx) => (
-                <li key={idx}>{line}</li>
+						const badgeClass =
+						res.decision === "Buy"
+							? "bg-green-500 text-white"
+							: res.decision === "Sell"
+							? "bg-red-500 text-white"
+							: res.decision === "Hold"
+							? "bg-yellow-400 text-black"
+							: "bg-gray-400 text-white";
+
+						return (
+						<tr key={idx} className="border-t">
+							<td className="p-3 font-bold">{stripSymbolSuffix(res.symbol)}</td>
+							<td>{currencySymbol}{res.current_price.toFixed(2)}</td>
+							<td>{currencySymbol}{res.worst_case?.toFixed(2)}</td>
+							<td>{currencySymbol}{res.best_case?.toFixed(2)}</td>
+							<td>{expectedReturn.toFixed(2)}%</td>
+							<td>{res.sma200 ? `${currencySymbol}${res.sma200.toFixed(2)}` : "N/A"}</td>
+							<td>{res.volatility ? res.volatility.toFixed(4) : "N/A"}</td>
+							<td>
+							<span className={`px-2 py-1 rounded-full text-xs font-bold ${badgeClass}`}>
+								{res.decision || "N/A"}
+							</span>
+							</td>
+						</tr>
+						);
+					})}
+					</tbody>
+
+			</table>
+		</div>
+
+
+          <div className="mt-8">
+            <label className="block font-medium mb-2">
+              <span role="img">🎯</span> Select a stock to view simulation chart:
+            </label>
+            <select
+              className="border p-2 rounded w-full"
+              onChange={(e) => setSelectedStock(e.target.value)}
+              value={selectedStock || ""}
+            >
+              <option value="">-- Select Stock --</option>
+              {response.results.map((res: any) => (
+                <option key={res.symbol} value={res.symbol}>
+                  {stripSymbolSuffix(res.symbol)}
+                </option>
               ))}
-            </ul>
+            </select>
+
+            <div className="flex items-center mt-4">
+              <label className="mr-3">Chart Type:</label>
+              <select
+                className="border p-2 rounded"
+                value={chartType}
+                onChange={(e) => setChartType(e.target.value as "line" | "area")}
+              >
+                <option value="line">Line</option>
+                <option value="area">Area</option>
+              </select>
+            </div>
           </div>
-        </>
+
+          {selectedStock && (
+            <div className="mt-10">
+              <h4 className="text-lg font-semibold mb-2">
+                📈 Monte Carlo Simulations for {stripSymbolSuffix(selectedStock)}
+              </h4>
+              <Line
+                data={generateChartData(
+                  response.results.find((res: any) => res.symbol === selectedStock).price_paths
+                )}
+              />
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
