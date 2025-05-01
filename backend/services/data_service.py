@@ -11,7 +11,18 @@ EXCHANGE_SUFFIX = {
 }
 
 def apply_exchange_suffix(symbol: str, exchange: str) -> str:
-    return symbol + EXCHANGE_SUFFIX.get(exchange.upper(), "")
+    # These exchanges don't need a suffix
+    if exchange in ["NASDAQ", "NYSE", "AMEX"]:
+        return symbol
+    suffix_map = {
+        "LSE": ".L",
+        "NSE": ".NS",
+        "BSE": ".BO",
+        "HKEX": ".HK",
+        "Crypto": "-USD"
+    }
+    return symbol + suffix_map.get(exchange, "")
+
 
 def clean_yfinance_columns(df: pd.DataFrame, symbol_with_suffix: str) -> pd.DataFrame:
     if isinstance(df.columns, pd.MultiIndex):
@@ -31,30 +42,21 @@ def clean_yfinance_columns(df: pd.DataFrame, symbol_with_suffix: str) -> pd.Data
         raise ValueError(f"Header mismatch for symbol {symbol_with_suffix}")
     return df
 
-def fetch_stock_data(symbol_with_suffix: str, period: str = "1y", exchange: str = "NASDAQ") -> pd.DataFrame | None:
-    """
-    Fetch stock data using a correctly suffixed symbol.
-    Assumes smart symbol suffixing already happened BEFORE calling.
-    """
-    try:
-        print(f"[INFO] Fetching data for {symbol_with_suffix} | Exchange: {exchange}")
+def fetch_stock_data(symbol: str, period="1d", exchange="LSE", interval="15m") -> pd.DataFrame | None:
+    print(f"[DEBUG] Fetching: {symbol} with fallback intervals")
 
-        df = yf.download(symbol_with_suffix, period=period, progress=False)
+    intervals_to_try = [interval, "30m", "60m", "1d"]
+    for intv in intervals_to_try:
+        try:
+            df = yf.download(symbol, period=period, interval=intv, progress=False)
+            if not df.empty and "Close" in df.columns:
+                print(f"[SUCCESS] Found data for {symbol} with interval {intv}")
+                df = df.dropna(subset=["Close"])
+                return df
+            else:
+                print(f"[WARN] No data for {symbol} at interval {intv}")
+        except Exception as e:
+            print(f"[ERROR] {symbol} failed on {intv}: {e}")
+    return None
 
-        if df.empty:
-            print(f"[WARN] No data returned for {symbol_with_suffix}")
-            return None  # ← Return None (NOT empty DataFrame)
 
-        df = clean_yfinance_columns(df, symbol_with_suffix)
-        df = df.dropna(subset=["Close"])
-
-        if df.empty:
-            print(f"[WARN] Data has no usable 'Close' prices after cleaning: {symbol_with_suffix}")
-            return None
-
-        print(f"[SUCCESS] Fetched {len(df)} rows for {symbol_with_suffix}")
-        return df
-
-    except Exception as e:
-        print(f"[ERROR] Exception while fetching {symbol_with_suffix}: {e}")
-        return None
