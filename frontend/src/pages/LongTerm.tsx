@@ -57,7 +57,8 @@ const LongTerm: React.FC = () => {
       .map((s) => s.trim().toUpperCase() + (exchangeSuffix[exchange] || ""));
 
     try {
-      const res = await fetch("http://localhost:8000/longterm", {
+      const API_BASE_URL = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${API_BASE_URL}/longterm`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
