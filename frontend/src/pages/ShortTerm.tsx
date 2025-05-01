@@ -1,5 +1,4 @@
-// src/pages/ShortTerm.tsx
-
+// ✅ Updated src/pages/ShortTerm.tsx
 import { useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
@@ -16,21 +15,21 @@ interface ShortTermResult {
   stop_loss?: number;
   take_profit?: number;
   decision?: string;
-  final_decision?: string;   // ✅ Pull final_decision from backend
+  final_decision?: string;
   news_sentiment?: string;
+  last_updated?: string;
 }
 
-// ✅ Updated - properly handle final_decision
 const getBadgeClass = (finalDecision: string) => {
   if (finalDecision.includes("Invest Strongly")) return "bg-green-600 text-white";
   if (finalDecision.includes("Invest")) return "bg-green-400 text-white";
   if (finalDecision.includes("Review Further") || finalDecision.includes("Hold Carefully")) return "bg-yellow-400 text-black";
   if (finalDecision.includes("Hold") || finalDecision.includes("Avoid")) return "bg-red-500 text-white";
-  return "bg-gray-400 text-white"; // fallback
+  return "bg-gray-400 text-white";
 };
 
 const ShortTerm = () => {
-  const [symbols, setSymbols] = useState("AAPL,TSLA");
+  const [symbols, setSymbols] = useState("");
   const [results, setResults] = useState<ShortTermResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [assetType, setAssetType] = useState("Stock");
@@ -64,10 +63,10 @@ const ShortTerm = () => {
 
   const downloadCSV = () => {
     const headers = [
-      "Symbol,Current Price,Predicted Price,RSI,Volatility,Stop Loss,Take Profit,Decision,News Sentiment,Final Decision",
+      "Symbol,Current Price,Predicted Price,RSI,Volatility,Stop Loss,Take Profit,Decision,News Sentiment,Final Decision,Last Updated",
     ];
     const rows = results.map((r) =>
-      `${r.symbol},${r.current_price},${r.predicted_price},${r.rsi},${r.volatility},${r.stop_loss},${r.take_profit},${r.decision},${r.news_sentiment},${r.final_decision}`
+      `${r.symbol},${r.current_price},${r.predicted_price},${r.rsi},${r.volatility},${r.stop_loss},${r.take_profit},${r.decision},${r.news_sentiment},${r.final_decision},${r.last_updated}`
     );
     const csvContent = [...headers, ...rows].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -88,7 +87,6 @@ const ShortTerm = () => {
 
       {/* Form Section */}
       <div className="max-w-2xl mx-auto space-y-6 mb-10">
-        {/* Asset Type */}
         <div>
           <label className="block text-sm font-semibold mb-2">Select Asset Type</label>
           <select
@@ -102,7 +100,6 @@ const ShortTerm = () => {
           </select>
         </div>
 
-        {/* Exchange */}
         <div>
           <label className="block text-sm font-semibold mb-2">Select Exchange</label>
           <select
@@ -116,19 +113,17 @@ const ShortTerm = () => {
           </select>
         </div>
 
-        {/* Symbols */}
         <div>
-          <label className="block text-sm font-semibold mb-2">Enter Stock Symbols (comma separated)</label>
+          <label className="block text-sm font-medium mb-1">Enter Stock Symbols (comma separated)</label>
           <input
-            type="text"
-            value={symbols}
-            onChange={(e) => setSymbols(e.target.value)}
-            placeholder="e.g., AAPL,TSLA"
-            className="w-full border rounded-md p-3"
-          />
+			type="text"
+			className="w-full border rounded-md p-3"
+			placeholder="e.g. TSLA, AAPL"
+			value={symbols}
+			onChange={(e) => setSymbols(e.target.value)}
+		  />
         </div>
 
-        {/* Button */}
         <Button
           onClick={fetchShortTerm}
           disabled={loading}
@@ -138,7 +133,6 @@ const ShortTerm = () => {
         </Button>
       </div>
 
-      {/* Result Section */}
       {results.length > 0 && (
         <div className="max-w-7xl mx-auto">
           <Button
@@ -164,7 +158,7 @@ const ShortTerm = () => {
                     <tr key={res.symbol} className="border-t">
                       <td className="p-3 font-bold">{res.symbol}</td>
                       {"error" in res ? (
-                        <td colSpan={8} className="text-red-600 italic">
+                        <td colSpan={9} className="text-red-600 italic">
                           ⚠️ {res.error}
                         </td>
                       ) : (
@@ -181,6 +175,7 @@ const ShortTerm = () => {
                               {finalDecision}
                             </span>
                           </td>
+                          
                         </>
                       )}
                     </tr>
