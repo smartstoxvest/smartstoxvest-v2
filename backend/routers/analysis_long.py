@@ -27,6 +27,12 @@ class StockSimulationResult(BaseModel):
 
 class LongTermResponse(BaseModel):
     results: List[StockSimulationResult]
+    
+def safe_float(val):
+    if pd.isna(val) or np.isnan(val) or np.isinf(val):
+        return None
+    return float(val)
+
 
 def monte_carlo_simulation(data, days=252, simulations=1000):
     returns = data['Close'].pct_change().dropna()
@@ -70,11 +76,11 @@ def long_term_analysis(req: LongTermRequest):
 
         results.append(StockSimulationResult(
             symbol=symbol,
-            current_price=current_price,
-            worst_case=worst_case,
-            best_case=best_case,
-            sma200=sma200,
-            volatility=volatility,
+            current_price=safe_float(current_price),
+            worst_case=safe_float(worst_case),
+            best_case=safe_float(best_case),
+            sma200=safe_float(sma200),
+            volatility=safe_float(volatility),
             decision=decision,
             price_paths=price_paths
         ))
