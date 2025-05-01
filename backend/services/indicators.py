@@ -101,3 +101,27 @@ def compute_short_term_signals(symbols, exchange, risk_tolerance):
         })
 
     return results
+
+def get_sma200_and_volatility(symbol, period="1y", exchange=""):
+    try:
+        df = yf.Ticker(symbol).history(period=period, interval="1d")
+        if df.empty or "Close" not in df:
+            print(f"[WARN] No 1d data for {symbol}, trying 60m interval.")
+            df = yf.Ticker(symbol).history(period=period, interval="60m")
+
+        if df.empty or "Close" not in df:
+            print(f"[ERROR] Still no valid Close data for {symbol}")
+            return None, None
+
+        df['SMA200'] = df['Close'].rolling(window=200).mean()
+        df['Volatility'] = df['Close'].pct_change().rolling(window=14).std()
+
+        sma200 = df['SMA200'].dropna().iloc[-1] if not df['SMA200'].dropna().empty else None
+        volatility = df['Volatility'].dropna().iloc[-1] if not df['Volatility'].dropna().empty else None
+
+        return float(sma200) if sma200 else None, float(volatility) if volatility else None
+
+    except Exception as e:
+        print(f"[ERROR] Failed to compute SMA/Volatility for {symbol}: {e}")
+        return None, None
+
