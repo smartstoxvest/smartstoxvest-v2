@@ -7,22 +7,14 @@ EXCHANGE_SUFFIX = {
     "NASDAQ": "",
     "NYSE": "",
     "NSE": ".NS",
+    "BSE": ".BO",
+    "HKEX": ".HK",
     "Crypto": "-USD"
 }
 
-def apply_exchange_suffix(symbol: str, exchange: str) -> str:
-    # These exchanges don't need a suffix
-    if exchange in ["NASDAQ", "NYSE", "AMEX"]:
-        return symbol
-    suffix_map = {
-        "LSE": ".L",
-        "NSE": ".NS",
-        "BSE": ".BO",
-        "HKEX": ".HK",
-        "Crypto": "-USD"
-    }
-    return symbol + suffix_map.get(exchange, "")
 
+def apply_exchange_suffix(symbol: str, exchange: str) -> str:
+    return symbol + EXCHANGE_SUFFIX.get(exchange.upper(), "")
 
 def clean_yfinance_columns(df: pd.DataFrame, symbol_with_suffix: str) -> pd.DataFrame:
     if isinstance(df.columns, pd.MultiIndex):
@@ -49,14 +41,14 @@ def fetch_stock_data(symbol: str, period="1d", exchange="LSE", interval="15m") -
     for intv in intervals_to_try:
         try:
             df = yf.download(symbol, period=period, interval=intv, progress=False)
-            if not df.empty and "Close" in df.columns:
-                print(f"[SUCCESS] Found data for {symbol} with interval {intv}")
+            if not df.empty and "Close" in df.columns or isinstance(df.columns, pd.MultiIndex):
+                df = clean_yfinance_columns(df, symbol)  # <-- 💥 ADD THIS
                 df = df.dropna(subset=["Close"])
+                print(f"[SUCCESS] Found data for {symbol} with interval {intv}")
                 return df
             else:
                 print(f"[WARN] No data for {symbol} at interval {intv}")
         except Exception as e:
             print(f"[ERROR] {symbol} failed on {intv}: {e}")
     return None
-
 
