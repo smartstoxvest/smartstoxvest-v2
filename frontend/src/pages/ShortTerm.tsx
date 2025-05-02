@@ -1,7 +1,8 @@
 // ✅ Updated src/pages/ShortTerm.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
+import StockChart from "@/components/StockChart"; // make sure path matches
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -20,6 +21,17 @@ interface ShortTermResult {
   last_updated?: string;
 }
 
+interface ChartData {
+  dates: string[];
+  open: number[];
+  high: number[];
+  low: number[];
+  close: number[];
+  sma50: number[];
+  sma200: number[];
+  rsi: number[];
+}
+
 const getBadgeClass = (finalDecision: string) => {
   if (finalDecision.includes("Invest Strongly")) return "bg-green-600 text-white";
   if (finalDecision.includes("Invest")) return "bg-green-400 text-white";
@@ -34,6 +46,30 @@ const ShortTerm = () => {
   const [loading, setLoading] = useState(false);
   const [assetType, setAssetType] = useState("Stock");
   const [exchange, setExchange] = useState("NASDAQ");
+  const [selectedSymbol, setSelectedSymbol] = useState("");
+  const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [selectedChart, setSelectedChart] = useState<"candlestick" | "sma" | "rsi">("candlestick");
+
+  useEffect(() => {
+    if (!selectedSymbol) return;
+
+    const timeoutId = setTimeout(() => {
+      const fetchChartData = async () => {
+        try {
+          const response = await axios.get(`${API_URL}/api/short-term-chart-data/${selectedSymbol}`, {
+            params: { exchange },
+          });
+          setChartData(response.data);
+        } catch (err) {
+          console.error("Chart data error", err);
+          setChartData(null);
+        }
+      };
+      fetchChartData();
+    }, 500); // debounce: 500ms
+
+    return () => clearTimeout(timeoutId);
+  }, [selectedSymbol, exchange]);
 
   const currencySymbol = (exchange: string) => {
     switch (exchange) {
@@ -116,12 +152,12 @@ const ShortTerm = () => {
         <div>
           <label className="block text-sm font-medium mb-1">Enter Stock Symbols (comma separated)</label>
           <input
-			type="text"
-			className="w-full border rounded-md p-3"
-			placeholder="e.g. TSLA, AAPL"
-			value={symbols}
-			onChange={(e) => setSymbols(e.target.value)}
-		  />
+            type="text"
+            className="w-full border rounded-md p-3"
+            placeholder="e.g. TSLA, AAPL"
+            value={symbols}
+            onChange={(e) => setSymbols(e.target.value)}
+          />
         </div>
 
         <Button
@@ -175,7 +211,6 @@ const ShortTerm = () => {
                               {finalDecision}
                             </span>
                           </td>
-                          
                         </>
                       )}
                     </tr>
@@ -184,6 +219,44 @@ const ShortTerm = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Chart section */}
+          <div className="mt-10">
+            <h2 className="text-lg font-semibold mb-2">📌 View Detailed Charts</h2>
+            <select
+              className="border p-2 rounded-md"
+              value={selectedSymbol}
+              onChange={(e) => setSelectedSymbol(e.target.value)}
+            >
+              <option value="">-- Select Symbol --</option>
+              {results.map((r) => (
+                <option key={r.symbol} value={r.symbol}>
+                  {r.symbol}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {chartData && (
+            <div className="mt-6">
+              <label className="font-medium mr-3">Select Chart Type:</label>
+              <select
+                className="border p-2 rounded-md"
+                value={selectedChart}
+                onChange={(e) => setSelectedChart(e.target.value as any)}
+              >
+                <option value="candlestick">Candlestick</option>
+                <option value="sma">Moving Averages (SMA)</option>
+                <option value="rsi">Relative Strength Index (RSI)</option>
+              </select>
+            </div>
+          )}
+
+          {chartData && (
+            <div className="mt-8">
+              <StockChart data={chartData} type={selectedChart} />
+            </div>
+          )}
         </div>
       )}
     </div>
