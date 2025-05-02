@@ -10,6 +10,20 @@ def safe_float(value):
         return None
     return round(float(value), 2)
 
+
+def apply_exchange_suffix(symbol: str, exchange: str) -> str:
+    suffix_map = {
+        "LSE": ".L",
+        "NSE": ".NS",
+        "BSE": ".BO",
+        "HKEX": ".HK",
+        "Crypto": "-USD",
+        "NASDAQ": "",
+        "NYSE": ""
+    }
+    return symbol + suffix_map.get(exchange.upper(), "")
+
+
 def compute_short_term_signals(symbols, exchange, risk_tolerance):
     results = []
 
