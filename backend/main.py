@@ -8,7 +8,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # ✅ Import routers AFTER setting path
-from backend.routers import analysis_short, analysis_medium, analysis_long, chart_data
+#from backend.routers import analysis_short, analysis_medium, analysis_long, chart_data
+from routers import analysis_short, analysis_medium, analysis_long, chart_data
 
 # ✅ Define FastAPI app FIRST
 app = FastAPI()
