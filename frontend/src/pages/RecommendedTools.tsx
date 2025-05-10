@@ -1,4 +1,3 @@
-import React from 'react';
 
 const featuredTool = {
   title: "🌟 Featured Tool of the Month: TradingView",
