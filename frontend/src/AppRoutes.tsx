@@ -4,6 +4,7 @@ import ShortTerm from "@/pages/ShortTerm";
 import MediumTerm from "@/pages/MediumTerm";
 import LongTerm from "@/pages/LongTerm";
 import Dashboard from "@/pages/Dashboard"; // ✅ Added Dashboard import
+import RecommendedTools from "@/pages/RecommendedTools";
 
 const AppRoutes = () => {
   return (
@@ -14,6 +15,7 @@ const AppRoutes = () => {
           <NavLink to="/short-term" className={({ isActive }) => isActive ? "font-bold text-blue-600" : "text-gray-600"}>📊 Short-Term</NavLink>
           <NavLink to="/medium-term" className={({ isActive }) => isActive ? "font-bold text-blue-600" : "text-gray-600"}>🔮 Medium-Term</NavLink>
           <NavLink to="/long-term" className={({ isActive }) => isActive ? "font-bold text-blue-600" : "text-gray-600"}>📉 Long-Term</NavLink>
+          <NavLink to="/tools" className={({ isActive }) => isActive ? "font-bold text-blue-600" : "text-gray-600"}>🧰 Tools</NavLink> {/* 👈 New Nav */}
         </nav>
 
         <Routes>
@@ -21,6 +23,7 @@ const AppRoutes = () => {
           <Route path="/short-term" element={<ShortTerm />} />
           <Route path="/medium-term" element={<MediumTerm />} />
           <Route path="/long-term" element={<LongTerm />} />
+          <Route path="/tools" element={<RecommendedTools />} />
         </Routes>
       </div>
     </Router>
