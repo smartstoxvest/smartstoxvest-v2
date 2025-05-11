@@ -13,7 +13,6 @@ import RequireAdmin from "@/components/RequireAdmin";
 import { useEffect, useState } from "react";
 
 const AppRoutes = () => {
-  const AppRoutes = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
