@@ -11,22 +11,22 @@ const AdminLogin = () => {
   const adminToken = import.meta.env.VITE_ADMIN_TOKEN || "my-secret-token";
 
   const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    console.log("🔐 Attempted login with:", password);
-    console.log("✅ Expected password:", expectedPassword);
-    console.log("🎯 Setting token:", adminToken);
-    
-    if (password.trim() === expectedPassword) {
-      localStorage.setItem("token", adminToken);
-      localStorage.setItem("loginTime", Date.now().toString());
-      
-      // 🔁 Force a full reload so isAdmin logic re-evaluates
-      window.location.href = "/admin/new-post";
-    } else {
-      setError("Invalid password");
-    }
-  };
+  console.log("🔐 Attempted login with:", password);
+  console.log("✅ Expected password:", expectedPassword);
+  console.log("🎯 Setting token:", adminToken);
+
+  if (password.trim() === expectedPassword) {
+    localStorage.setItem("token", adminToken);
+    localStorage.setItem("loginTime", Date.now().toString());
+
+    // ✅ Use React Router to navigate (no reload)
+    navigate("/admin/new-post", { replace: true });
+  } else {
+    setError("Invalid password");
+  }
+};
 
   return (
     <div className="max-w-md mx-auto mt-20 p-6 border rounded shadow">
