@@ -13,16 +13,18 @@ import RequireAdmin from "@/components/RequireAdmin";
 import { useEffect, useState } from "react";
 
 const AppRoutes = () => {
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
+  return localStorage.getItem("token") === import.meta.env.VITE_ADMIN_TOKEN;
+});
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const expected = import.meta.env.VITE_ADMIN_TOKEN;
-    console.log("🌐 TOKEN:", token);
-    console.log("✅ EXPECTED:", expected);
-    console.log("🔐 isAdmin:", token === expected);
-    setIsAdmin(token === expected);
-  }, []);
+useEffect(() => {
+  const handleStorageChange = () => {
+    setIsAdmin(localStorage.getItem("token") === import.meta.env.VITE_ADMIN_TOKEN);
+  };
+  window.addEventListener("storage", handleStorageChange);
+  return () => window.removeEventListener("storage", handleStorageChange);
+}, []);
+
 
   return (
     <Router>
