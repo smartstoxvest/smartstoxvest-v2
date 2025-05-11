@@ -1,14 +1,24 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+interface BlogPost {
+  slug: string;
+  title: string;
+  content: string;
+  created_at: string;
+  author?: string;
+}
+
 const Blog = () => {
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
     fetch("http://localhost:8000/api/posts")
       .then((res) => res.json())
-      .then((data) => {
-        const sorted = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      .then((data: BlogPost[]) => {
+        const sorted = data.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
         setPosts(sorted);
       })
       .catch((err) => console.error("Failed to load posts:", err));
