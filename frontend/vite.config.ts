@@ -9,5 +9,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  base: "./", // ✅ This is the key fix
+  base: "./", // ✅ Already good
+  esbuild: {
+    jsx: 'automatic', // ✅ Add this line
+  }
 });
