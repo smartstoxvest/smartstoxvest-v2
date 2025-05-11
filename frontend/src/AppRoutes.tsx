@@ -18,6 +18,9 @@ const AppRoutes = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     const expected = import.meta.env.VITE_ADMIN_TOKEN;
+    console.log("🌐 TOKEN:", token);
+    console.log("✅ EXPECTED:", expected);
+    console.log("🔐 isAdmin:", token === expected);
     setIsAdmin(token === expected);
   }, []);
 
