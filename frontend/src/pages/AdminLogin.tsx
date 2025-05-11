@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  // Get credentials from .env
   const expectedPassword = import.meta.env.VITE_ADMIN_PASSWORD || "admin123";
   const adminToken = import.meta.env.VITE_ADMIN_TOKEN || "my-secret-token";
 
@@ -20,8 +20,8 @@ const AdminLogin = () => {
       localStorage.setItem("token", adminToken);
       localStorage.setItem("loginTime", Date.now().toString());
 
-      // ✅ Force a full page reload to trigger isAdmin state in AppRoutes
-      window.location.replace("/admin/new-post");
+      // 🚀 Force reload to ensure AppRoutes picks up isAdmin
+      window.location.href = "/admin/new-post";
     } else {
       setError("Invalid password");
     }
@@ -34,7 +34,6 @@ const AdminLogin = () => {
         <input
           type="password"
           placeholder="Enter admin password"
-          autoComplete="new-password"
           className="border px-4 py-2 w-full mb-3"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
