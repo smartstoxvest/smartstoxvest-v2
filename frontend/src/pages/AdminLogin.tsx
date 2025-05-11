@@ -12,10 +12,17 @@ const AdminLogin = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log("🔐 Attempted login with:", password);
+    console.log("✅ Expected password:", expectedPassword);
+    console.log("🎯 Setting token:", adminToken);
+    
     if (password.trim() === expectedPassword) {
       localStorage.setItem("token", adminToken);
       localStorage.setItem("loginTime", Date.now().toString());
-      navigate("/admin/new-post");
+      
+      // 🔁 Force a full reload so isAdmin logic re-evaluates
+      window.location.href = "/";
     } else {
       setError("Invalid password");
     }
