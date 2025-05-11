@@ -4,29 +4,28 @@ import { useNavigate } from "react-router-dom";
 const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   // Get credentials from .env
   const expectedPassword = import.meta.env.VITE_ADMIN_PASSWORD || "admin123";
   const adminToken = import.meta.env.VITE_ADMIN_TOKEN || "my-secret-token";
 
   const handleLogin = (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  console.log("🔐 Attempted login with:", password);
-  console.log("✅ Expected password:", expectedPassword);
-  console.log("🎯 Setting token:", adminToken);
+    console.log("🔐 Attempted login with:", password);
+    console.log("✅ Expected password:", expectedPassword);
+    console.log("🎯 Setting token:", adminToken);
 
-  if (password.trim() === expectedPassword) {
-    localStorage.setItem("token", adminToken);
-    localStorage.setItem("loginTime", Date.now().toString());
+    if (password.trim() === expectedPassword) {
+      localStorage.setItem("token", adminToken);
+      localStorage.setItem("loginTime", Date.now().toString());
 
-    // ✅ Use React Router to navigate (no reload)
-    navigate("/admin/new-post", { replace: true });
-  } else {
-    setError("Invalid password");
-  }
-};
+      // ✅ Force a full page reload to trigger isAdmin state in AppRoutes
+      window.location.replace("/admin/new-post");
+    } else {
+      setError("Invalid password");
+    }
+  };
 
   return (
     <div className="max-w-md mx-auto mt-20 p-6 border rounded shadow">
@@ -35,6 +34,7 @@ const AdminLogin = () => {
         <input
           type="password"
           placeholder="Enter admin password"
+          autoComplete="new-password"
           className="border px-4 py-2 w-full mb-3"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
