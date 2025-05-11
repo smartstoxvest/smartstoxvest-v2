@@ -10,9 +10,17 @@ import Blog from "@/pages/Blog";
 import BlogDetail from "@/pages/BlogDetail";
 import AdminLogin from "@/pages/AdminLogin";
 import RequireAdmin from "@/components/RequireAdmin";
+import { useEffect, useState } from "react";
 
 const AppRoutes = () => {
-  const isAdmin = localStorage.getItem("token") === import.meta.env.VITE_ADMIN_TOKEN;
+  const AppRoutes = () => {
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const expected = import.meta.env.VITE_ADMIN_TOKEN;
+    setIsAdmin(token === expected);
+  }, []);
 
   return (
     <Router>
