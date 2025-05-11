@@ -22,7 +22,7 @@ const AdminLogin = () => {
       localStorage.setItem("loginTime", Date.now().toString());
       
       // 🔁 Force a full reload so isAdmin logic re-evaluates
-      window.location.href = "/";
+      window.location.href = "/admin/new-post";
     } else {
       setError("Invalid password");
     }
