@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import SimpleMDE from "react-simplemde-editor";
 import "easymde/dist/easymde.min.css";
 import toast from "react-hot-toast";
+const API_URL = import.meta.env.VITE_API_URL;
+
 
 const ADMIN_TOKEN = localStorage.getItem("token");
 const TOKEN_EXPIRY_MINUTES = 30;
@@ -26,12 +28,12 @@ const customOptions: any = {
           formData.append("file", file);
 
           try {
-            const res = await fetch("http://localhost:8000/api/upload-image", {
+            const res = await fetch(`${API_URL}/api/upload-image`, {
               method: "POST",
               body: formData,
             });
             const data = await res.json();
-            const url = `http://localhost:8000${data.url}`;
+            const url = `${API_URL}${data.url}`;
             editor.codemirror.replaceSelection(`![](${url})`);
           } catch (err) {
             toast.error("Image upload failed");
@@ -74,7 +76,7 @@ export const NewPost = () => {
       author: author.trim() || "SmartStoxVest Team",
     };
 
-    const res = await fetch("http://localhost:8000/api/posts", {
+    const res = await fetch(`${API_URL}/api/posts`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
