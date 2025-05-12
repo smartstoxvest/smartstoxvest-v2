@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+const API_URL = import.meta.env.VITE_API_URL;
+
 
 interface BlogPost {
   slug: string;
@@ -13,7 +15,7 @@ const Blog = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/posts")
+    fetch(`${API_URL}/api/posts`)
       .then((res) => res.json())
       .then((data: BlogPost[]) => {
         const sorted = data.sort(
