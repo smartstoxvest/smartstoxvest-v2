@@ -13,16 +13,20 @@ import RequireAdmin from "@/components/RequireAdmin";
 import { useEffect, useState } from "react";
 
 const AppRoutes = () => {
-  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
-  return localStorage.getItem("token") === import.meta.env.VITE_ADMIN_TOKEN;
-});
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
 useEffect(() => {
-  const handleStorageChange = () => {
-    setIsAdmin(localStorage.getItem("token") === import.meta.env.VITE_ADMIN_TOKEN);
+  const checkAdmin = () => {
+    const token = localStorage.getItem("token");
+    const envToken = import.meta.env.VITE_ADMIN_TOKEN;
+    setIsAdmin(token === envToken);
   };
-  window.addEventListener("storage", handleStorageChange);
-  return () => window.removeEventListener("storage", handleStorageChange);
+
+  checkAdmin(); // Run immediately on mount
+
+  window.addEventListener("storage", checkAdmin); // Respond to cross-tab token changes
+
+  return () => window.removeEventListener("storage", checkAdmin);
 }, []);
 
 
