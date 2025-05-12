@@ -1,6 +1,7 @@
 // ✅ BlogDetail.tsx (React component)
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+const API_URL = import.meta.env.VITE_API_URL;
 
 // BlogPost type
 type BlogPost = {
@@ -20,11 +21,11 @@ const BlogDetail = () => {
   const [related, setRelated] = useState<BlogPost[]>([]);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/posts/${slug}`)
+    fetch(`${API_URL}/api/posts/${slug}`)
       .then((res) => res.json())
       .then((data) => {
         setPost(data);
-        return fetch(`http://localhost:8000/api/posts/related/${data.slug}`);
+        return fetch(`${API_URL}/api/posts/related/${data.slug}`);
       })
       .then((res) => res.json())
       .then((relatedData) => setRelated(relatedData))
