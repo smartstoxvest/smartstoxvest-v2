@@ -21,7 +21,7 @@ const BlogPost = () => {
   const [allPosts, setAllPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/posts")
+    fetch(`${API_URL}/api/posts")
       .then((res) => res.json())
       .then((data) => {
         const sorted = data.sort((a: BlogPost, b: BlogPost) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -32,7 +32,7 @@ const BlogPost = () => {
 
   useEffect(() => {
     if (slug) {
-      fetch(`http://localhost:8000/api/posts/${slug}`)
+      fetch(`${API_URL}/api/posts/${slug}`)
         .then((res) => res.json())
         .then((data) => setPost(data))
         .catch((err) => console.error("Error fetching post:", err));
@@ -58,7 +58,7 @@ const BlogPost = () => {
 			components={{
 			img: ({ src, alt }) => (
 			<img
-				src={`http://localhost:8000${src}`}
+				src={`${API_URL}${src}`}
 				alt={alt}
 				className="max-w-full h-auto rounded-lg my-4"
 			/>
