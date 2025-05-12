@@ -4,6 +4,8 @@ import ReactMarkdown from "react-markdown";
 import "tailwindcss/tailwind.css";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+const API_URL = import.meta.env.VITE_API_URL;
+
 
 type BlogPost = {
   id: number;
@@ -21,7 +23,7 @@ const BlogPost = () => {
   const [allPosts, setAllPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/posts")
+    fetch(`${API_URL}/api/posts`)
       .then((res) => res.json())
       .then((data) => {
         const sorted = data.sort((a: BlogPost, b: BlogPost) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
