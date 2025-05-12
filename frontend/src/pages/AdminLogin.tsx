@@ -8,7 +8,10 @@ const AdminLogin = () => {
 
   const expectedPassword = import.meta.env.VITE_ADMIN_PASSWORD || "admin123";
   const adminToken = import.meta.env.VITE_ADMIN_TOKEN || "my-secret-token";
-
+  
+  console.log("🧪 ENV TOKEN:", import.meta.env.VITE_ADMIN_TOKEN);
+  console.log("🧪 LocalStorage TOKEN:", localStorage.getItem("token"));
+  
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
 
