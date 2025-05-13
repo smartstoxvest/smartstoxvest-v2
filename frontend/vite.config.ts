@@ -3,14 +3,14 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
+  base: '/app/', // ✅ Fixed single base path
   plugins: [react()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
-  base: "/app", // ✅ Crucial for Netlify routing to work on deep links
   esbuild: {
-    jsx: 'automatic', // ✅ Add this line
-  }
+    jsx: 'automatic',
+  },
 });
