@@ -105,7 +105,7 @@ const MediumTerm = () => {
         <div>
           <label className="block text-sm font-semibold mb-2">Select Exchange</label>
           <select value={exchange} onChange={(e) => setExchange(e.target.value)} className="w-full border rounded-md p-3">
-            {["NASDAQ-USA", "NYSE-USA", "LSE-UK", "NSE-India", "BSE-India", "HKEX-Hongkong", "Crypto"].map((ex) => (
+            {["NASDAQ", "NYSE", "LSE", "NSE", "BSE", "HKEX", "Crypto"].map((ex) => (
               <option key={ex} value={ex}>{ex}</option>
             ))}
           </select>
