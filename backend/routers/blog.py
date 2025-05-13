@@ -9,7 +9,8 @@ from models.blog_post import BlogPost, BlogPostCreate
 from db import get_session
 
 router = APIRouter()
-ADMIN_TOKEN = "my-secret-token"  # Replace with environment variable in production
+ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "my-secret-token")
+
 
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
