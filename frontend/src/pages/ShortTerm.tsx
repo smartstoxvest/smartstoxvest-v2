@@ -143,7 +143,7 @@ const ShortTerm = () => {
             onChange={(e) => setExchange(e.target.value)}
             className="w-full border rounded-md p-3"
           >
-            {["NASDAQ", "NYSE", "LSE", "NSE", "BSE", "HKEX", "Crypto"].map((ex) => (
+            {["NASDAQ-USA", "NYSE-USA", "LSE-UK", "NSE-India", "BSE-India", "HKEX-Hongkong", "Crypto"].map((ex) => (
               <option key={ex} value={ex}>{ex}</option>
             ))}
           </select>
