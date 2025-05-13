@@ -1,4 +1,9 @@
 [build]
   base = "frontend"
-  command = "npm install && npm run build"
-  publish = "frontend/dist"
+  publish = "dist"
+  command = "npm run build"
+
+[build.environment]
+  VITE_API_URL = "https://your-api-url"
+  VITE_ADMIN_TOKEN = "your-admin-token"
+  VITE_ADMIN_PASSWORD = "your-admin-password"
