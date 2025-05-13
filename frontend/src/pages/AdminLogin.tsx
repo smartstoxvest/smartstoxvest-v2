@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
 const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
+  console.log("💣 ENV:", import.meta.env)
   const expectedPassword = import.meta.env.VITE_ADMIN_PASSWORD || "admin123";
   const adminToken = import.meta.env.VITE_ADMIN_TOKEN;
   if (!adminToken) {
