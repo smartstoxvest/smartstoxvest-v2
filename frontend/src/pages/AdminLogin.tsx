@@ -7,7 +7,10 @@ const AdminLogin = () => {
   const navigate = useNavigate();
 
   const expectedPassword = import.meta.env.VITE_ADMIN_PASSWORD || "admin123";
-  const adminToken = import.meta.env.VITE_ADMIN_TOKEN || "my-secret-token";
+  const adminToken = import.meta.env.VITE_ADMIN_TOKEN;
+  if (!adminToken) {
+    console.error("❌ Missing VITE_ADMIN_TOKEN in env.");
+  }
   
   console.log("🧪 ENV TOKEN:", import.meta.env.VITE_ADMIN_TOKEN);
   console.log("🧪 LocalStorage TOKEN:", localStorage.getItem("token"));
