@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, NavLink } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, NavLink, Navigate} from "react-router-dom";
 import ShortTerm from "@/pages/ShortTerm";
 import MediumTerm from "@/pages/MediumTerm";
 import LongTerm from "@/pages/LongTerm";
@@ -22,9 +22,9 @@ const AppRoutes = () => {
       setIsAdmin(token === envToken);
     };
 
-    checkAdmin(); // Run immediately on mount
+    checkAdmin();
 
-    window.addEventListener("storage", checkAdmin); // Respond to cross-tab token changes
+    window.addEventListener("storage", checkAdmin);
 
     return () => window.removeEventListener("storage", checkAdmin);
   }, []);
@@ -36,7 +36,8 @@ const AppRoutes = () => {
   };
 
   return (
-    <Router>
+    // ✅ Added basename="/app" to tell React Router that this app is hosted at /app on Netlify
+    <Router basename="/app">
       <div className="p-4">
         <nav className="mb-6 border-b pb-4 flex gap-6 text-lg items-center">
           <NavLink to="/" className={({ isActive }) => isActive ? "font-bold text-blue-600" : "text-gray-600"}>🏠 Dashboard</NavLink>
@@ -82,6 +83,9 @@ const AppRoutes = () => {
           {/* Blog routes */}
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogDetail />} />
+
+          {/* ✅ Catch-all: Redirect unknown routes to dashboard */}
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
     </Router>
