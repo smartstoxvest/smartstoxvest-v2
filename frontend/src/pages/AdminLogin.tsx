@@ -17,22 +17,23 @@ const AdminLogin = () => {
   console.log("🧪 LocalStorage TOKEN:", localStorage.getItem("token"));
   
   const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    console.log("🔐 Attempted login with:", password);
-    console.log("✅ Expected password:", expectedPassword);
-    console.log("🎯 Setting token:", adminToken);
+  console.log("🔐 Attempted login with:", password);
+  console.log("✅ Expected password:", expectedPassword);
+  console.log("🎯 Setting token:", adminToken);
 
-    if (password.trim() === expectedPassword) {
-      localStorage.setItem("token", adminToken);
-      localStorage.setItem("loginTime", Date.now().toString());
+  if (password.trim() === expectedPassword) {
+    localStorage.setItem("token", adminToken);
+    localStorage.setItem("loginTime", Date.now().toString());
 
-      // 🚀 Force reload to ensure AppRoutes picks up isAdmin
-      window.location.href = "/admin/new-post";
-    } else {
-      setError("Invalid password");
-    }
-  };
+    // 🚀 Redirect to /app/admin/new-post
+    const basePath = "/app/";  // <-- hardcoded safe fallback
+    window.location.href = `${basePath}admin/new-post`;
+  } else {
+    setError("Invalid password");
+  }
+};
 
   return (
     <div className="max-w-md mx-auto mt-20 p-6 border rounded shadow">
