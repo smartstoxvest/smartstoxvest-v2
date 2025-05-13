@@ -9,7 +9,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  base: "/", // ✅ Crucial for Netlify routing to work on deep links
+  base: "/app", // ✅ Crucial for Netlify routing to work on deep links
   esbuild: {
     jsx: 'automatic', // ✅ Add this line
   }
