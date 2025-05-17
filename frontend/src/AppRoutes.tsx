@@ -67,18 +67,18 @@ const AppRoutes = () => {
           <Route path="/tools" element={<RecommendedTools />} />
 
           {/* 🛡 Admin-protected routes */}
-          <Route path="/admin/new-post" element={
+          <Route path="/app/admin/new-post" element={
             <RequireAdmin>
               <NewPost />
             </RequireAdmin>
           } />
-          <Route path="/admin/edit/:slug" element={
+          <Route path="admin/edit/:slug" element={
             <RequireAdmin>
               <EditPost />
             </RequireAdmin>
           } />
 
-          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="admin/login" element={<AdminLogin />} />
 
           {/* Blog routes */}
           <Route path="/blog" element={<Blog />} />

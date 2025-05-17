@@ -60,8 +60,12 @@ const Navbar = () => {
           ✅ Welcome, Admin! You are now logged in.
         </div>
       )}
+	  {/* ✅ Inject test span here to verify rebuild */}
+      <span className="text-green-600 text-xs">✅ Build updated!</span>
     </>
   );
 };
+
+
 
 export default Navbar;

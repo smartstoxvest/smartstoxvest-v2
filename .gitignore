@@ -1,3 +1,32 @@
+# Node dependencies
 node_modules/
+
+# Build output
 dist/
-frontend/.env.production  # ✅ Prevent secrets from leaking
+frontend/dist/
+
+# Environment files (NEVER commit real secrets)
+frontend/.env
+frontend/.env.production
+backend/.env
+
+# Python bytecode/cache
+__pycache__/
+*.pyc
+
+# VSCode/IDE/editor clutter
+.vscode/
+*.log
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Python virtual environment
+backend/venv/
+
+# SQLite DB (optional)
+backend/*.db
+
+# Ignore uploads if dynamically created
+backend/uploads/

@@ -10,3 +10,5 @@ tensorflow
 textblob
 sqlmodel
 python-multipart
+python-dotenv
+

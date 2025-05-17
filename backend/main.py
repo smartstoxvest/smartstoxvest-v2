@@ -2,6 +2,11 @@ import sys
 import os
 from db import init_db
 from fastapi.staticfiles import StaticFiles
+from routers import admin
+
+# ✅ Load .env before using os.getenv anywhere
+from dotenv import load_dotenv
+load_dotenv()
 
 
 # 👇 Adds /src to the Python path so "backend.*" imports work
@@ -26,6 +31,7 @@ app.include_router(analysis_short.router)
 app.include_router(analysis_medium.router)
 app.include_router(analysis_long.router)
 app.include_router(chart_data.router)  # ✅ move this here
+app.include_router(admin.router)
 app.include_router(blog.router)
 
 # ✅ Add CORS middleware
@@ -40,6 +46,14 @@ app.add_middleware(
 @app.get("/")
 def root():
     return {"message": "SmartStoxVest backend is live!"}
+    
+
+@app.get("/test-env")
+def test_env():
+    return {
+        "ADMIN_TOKEN": os.getenv("ADMIN_TOKEN"),
+        "ADMIN_PASSWORD": os.getenv("ADMIN_PASSWORD")
+    }
     
 
     # ✅ Serve uploaded images
