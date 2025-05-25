@@ -11,4 +11,4 @@ textblob
 sqlmodel
 python-multipart
 python-dotenv
-
+python-jose[cryptography]
