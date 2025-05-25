@@ -12,3 +12,4 @@ sqlmodel
 python-multipart
 python-dotenv
 python-jose[cryptography]
+passlib[bcrypt]
