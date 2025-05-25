@@ -69,7 +69,7 @@ const EditPost = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/posts/${slug}`)
+    fetch(`${API_URL}/api/posts/${slug}`)
       .then(res => res.json())
       .then((data: Post) => {
         setTitle(data.title);
@@ -89,7 +89,7 @@ const EditPost = () => {
       toast.error("🔒 Session expired. Please log in again.");
       localStorage.removeItem("token");
       localStorage.removeItem("loginTime");
-      window.location.href = "/admin/login";
+      window.location.href = "/app/admin/login";
       return;
     }
 
@@ -101,14 +101,16 @@ const EditPost = () => {
       author: author.trim() || "SmartStoxVest Team"
     };
 
-    const res = await fetch(`${API_URL}/api/posts`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${ADMIN_TOKEN}`,
-      },
-      body: JSON.stringify(updatedPost),
-    });
+    const token = localStorage.getItem("token");
+
+	const res = await fetch(`${API_URL}/api/posts/${slugInput}`, {
+	method: "PUT",
+	headers: {
+		"Content-Type": "application/json",
+		"Authorization": `Bearer ${token}`, // ✅ Always gets the latest token
+	},
+	body: JSON.stringify(updatedPost),
+	});
 
     if (res.ok) {
       toast.success("✅ Post updated!");

@@ -1,4 +1,5 @@
 from sqlmodel import create_engine, Session, SQLModel
+from models import User, BlogPost  # ✅ import your models
 
 sqlite_file_name = "blog.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"

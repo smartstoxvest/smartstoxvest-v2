@@ -5,17 +5,24 @@ node_modules/
 dist/
 frontend/dist/
 
-# Environment files (NEVER commit real secrets)
+# Production build for landing is allowed
+# (We want to commit landing/app/)
+
+# Environment variables (never commit secrets)
+*.env*
 frontend/.env
 frontend/.env.production
 backend/.env
 
-# Python bytecode/cache
+# Python cache/compiled files
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# VSCode/IDE/editor clutter
+# Editor and IDE clutter
 .vscode/
+.idea/
 *.log
 
 # OS junk
@@ -25,8 +32,13 @@ Thumbs.db
 # Python virtual environment
 backend/venv/
 
-# SQLite DB (optional)
+# SQLite DB (should NOT be committed to GitHub)
 backend/*.db
 
-# Ignore uploads if dynamically created
+# Uploads (if created dynamically)
 backend/uploads/
+
+# Backup or temp files
+*.bak
+*.swp
+*.swo

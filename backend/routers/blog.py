@@ -1,16 +1,19 @@
-from fastapi import APIRouter, HTTPException, Header, Depends, UploadFile, File
+
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from fastapi.responses import FileResponse
 from sqlmodel import select, Session
-from typing import List, Optional
+from typing import List
 from datetime import datetime
 import os
 
 from models.blog_post import BlogPost, BlogPostCreate
 from db import get_session
+from .deps import get_current_admin  # ✅ secure admin routes
+from fastapi import Depends
+from .deps import get_current_admin  # ✅ uses JWT to check admin identity
+
 
 router = APIRouter()
-ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "my-secret-token")
-
 
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -36,12 +39,9 @@ def get_post_by_slug(slug: str, session: Session = Depends(get_session)):
 def update_post(
     slug: str,
     updated: BlogPost,
-    authorization: Optional[str] = Header(None),
     session: Session = Depends(get_session),
+    admin=Depends(get_current_admin),  # ✅ check admin token
 ):
-    if authorization != f"Bearer {ADMIN_TOKEN}":
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
     post = session.exec(select(BlogPost).where(BlogPost.slug == slug)).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
@@ -50,7 +50,7 @@ def update_post(
     post.slug = updated.slug
     post.content = updated.content
     post.tags = updated.tags
-    post.created_at = datetime.utcnow()  # Optional: update timestamp
+    post.created_at = datetime.utcnow()
 
     session.add(post)
     session.commit()
@@ -74,12 +74,9 @@ def upload_image(file: UploadFile = File(...)):
 @router.post("/api/posts", response_model=BlogPost)
 def create_post(
     post: BlogPostCreate,
-    authorization: Optional[str] = Header(None),
     session: Session = Depends(get_session),
+    current_admin: str = Depends(get_current_admin)  # ✅ requires valid admin JWT
 ):
-    if authorization != f"Bearer {ADMIN_TOKEN}":
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
     existing = session.exec(select(BlogPost).where(BlogPost.slug == post.slug)).first()
     if existing:
         raise HTTPException(status_code=400, detail="Slug already exists")
@@ -108,7 +105,6 @@ def get_related_posts(slug: str, session: Session = Depends(get_session)):
     if not current.tags:
         return []
 
-    # Match by the first tag (simple logic)
     first_tag = current.tags.split(",")[0].strip()
 
     related = session.exec(

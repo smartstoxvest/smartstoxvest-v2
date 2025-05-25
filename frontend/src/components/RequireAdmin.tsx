@@ -1,22 +1,21 @@
-import { useEffect, useState } from "react";
+import React, { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import type { ReactNode } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+
+interface User {
+  email: string;
+}
+
+interface AuthContextType {
+  user: User | null;
+}
 
 const RequireAdmin = ({ children }: { children: ReactNode }) => {
-  const [isChecking, setIsChecking] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { user } = useAuth() as AuthContextType;
+  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const expected = import.meta.env.VITE_ADMIN_TOKEN;
-    setIsAdmin(token === expected);
-    setIsChecking(false);
-  }, []);
-
-  if (isChecking) return null; // optional: show loader
-
-  if (!isAdmin) {
-    return <Navigate to="/admin/login" replace />;
+  if (!user || user.email !== adminEmail) {
+    return <Navigate to="/auth" />;
   }
 
   return <>{children}</>;

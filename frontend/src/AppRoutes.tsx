@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, NavLink, Navigate} from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import ShortTerm from "@/pages/ShortTerm";
 import MediumTerm from "@/pages/MediumTerm";
 import LongTerm from "@/pages/LongTerm";
@@ -6,14 +6,24 @@ import Dashboard from "@/pages/Dashboard";
 import RecommendedTools from "@/pages/RecommendedTools";
 import NewPost from "@/pages/NewPost";
 import EditPost from "@/pages/EditPost";
-import Blog from "@/pages/Blog"; 
+import Blog from "@/pages/Blog";
 import BlogDetail from "@/pages/BlogDetail";
 import AdminLogin from "@/pages/AdminLogin";
 import RequireAdmin from "@/components/RequireAdmin";
+import Layout from "@/components/Layout";
 import { useEffect, useState } from "react";
+import AuthUI from "@/pages/AuthUI";
+import RequireAuth from "@/components/RequireAuth";
+import useAuth from "@/hooks/useAuth";
+import AdminUsers from "@/pages/AdminUsers";
+import { ForgotPassword, ResetPassword } from "./pages/ForgotAndResetPassword";
+
 
 const AppRoutes = () => {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     const checkAdmin = () => {
@@ -23,72 +33,71 @@ const AppRoutes = () => {
     };
 
     checkAdmin();
-
     window.addEventListener("storage", checkAdmin);
-
     return () => window.removeEventListener("storage", checkAdmin);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("loginTime");
-    window.location.href = "/admin/login";
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      console.log("✅ beforeinstallprompt captured");
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult: any) => {
+        if (choiceResult.outcome === "accepted") {
+          console.log("🎉 User installed the app");
+        } else {
+          console.log("❌ User dismissed the install");
+        }
+        setDeferredPrompt(null);
+      });
+    }
   };
 
   return (
-    // ✅ Added basename="/app" to tell React Router that this app is hosted at /app on Netlify
-    <Router basename="/app">
-      <div className="p-4">
-        <nav className="mb-6 border-b pb-4 flex gap-6 text-lg items-center">
-          <NavLink to="/" className={({ isActive }) => isActive ? "font-bold text-blue-600" : "text-gray-600"}>🏠 Dashboard</NavLink>
-          <NavLink to="/short-term" className={({ isActive }) => isActive ? "font-bold text-blue-600" : "text-gray-600"}>📊 Short-Term</NavLink>
-          <NavLink to="/medium-term" className={({ isActive }) => isActive ? "font-bold text-blue-600" : "text-gray-600"}>🔮 Medium-Term</NavLink>
-          <NavLink to="/long-term" className={({ isActive }) => isActive ? "font-bold text-blue-600" : "text-gray-600"}>📉 Long-Term</NavLink>
-          <NavLink to="/tools" className={({ isActive }) => isActive ? "font-bold text-blue-600" : "text-gray-600"}>🧰 Tools</NavLink>
-          {isAdmin && (
-            <>
-              <NavLink to="/admin/new-post" className={({ isActive }) => isActive ? "font-bold text-blue-600" : "text-gray-600"}>🛠️ New Post</NavLink>
-              <button
-                onClick={handleLogout}
-                className="text-red-600 hover:underline ml-2"
-              >
-                🔓 Logout
-              </button>
-            </>
-          )}
-          <NavLink to="/blog" className={({ isActive }) => isActive ? "font-bold text-blue-600" : "text-gray-600"}>📝 Blog</NavLink>
-        </nav>
+    <>
+      {deferredPrompt && (
+        <div className="p-4">
+          <button
+            onClick={handleInstallClick}
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            📲 Install SmartStoxVest
+          </button>
+        </div>
+      )}
 
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/short-term" element={<ShortTerm />} />
-          <Route path="/medium-term" element={<MediumTerm />} />
-          <Route path="/long-term" element={<LongTerm />} />
+      <Routes>
+        <Route element={<Layout />}>
+		  <Route path="/admin/users" element={<RequireAdmin><AdminUsers /></RequireAdmin>} />
+          <Route path="/auth" element={<AuthUI />} />
+		  <Route path="/forgot-password" element={<ForgotPassword />} />
+		  <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/" element={<RequireAuth><Dashboard /></RequireAuth>} />
+          <Route path="/short-term" element={<RequireAuth><ShortTerm /></RequireAuth>} />
+          <Route path="/medium-term" element={<RequireAuth><MediumTerm /></RequireAuth>} />
+          <Route path="/long-term" element={<RequireAuth><LongTerm /></RequireAuth>} />
           <Route path="/tools" element={<RecommendedTools />} />
-
-          {/* 🛡 Admin-protected routes */}
-          <Route path="/app/admin/new-post" element={
-            <RequireAdmin>
-              <NewPost />
-            </RequireAdmin>
-          } />
-          <Route path="admin/edit/:slug" element={
-            <RequireAdmin>
-              <EditPost />
-            </RequireAdmin>
-          } />
-
-          <Route path="admin/login" element={<AdminLogin />} />
-
-          {/* Blog routes */}
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogDetail />} />
+        </Route>
 
-          {/* ✅ Catch-all: Redirect unknown routes to dashboard */}
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </div>
-    </Router>
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/new-post" element={<RequireAdmin><NewPost /></RequireAdmin>} />
+        <Route path="/admin/edit/:slug" element={<RequireAdmin><EditPost /></RequireAdmin>} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </>
   );
 };
 

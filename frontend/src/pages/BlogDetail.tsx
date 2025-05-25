@@ -1,9 +1,9 @@
-// ✅ BlogDetail.tsx (React component)
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
-// BlogPost type
 type BlogPost = {
   id: number;
   title: string;
@@ -15,10 +15,22 @@ type BlogPost = {
   created_at: string;
 };
 
+// ✅ Define User and Auth types
+interface User {
+  email: string;
+}
+
+interface AuthContextType {
+  user: User | null;
+}
+
 const BlogDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [related, setRelated] = useState<BlogPost[]>([]);
+  const { user } = useAuth() as AuthContextType;
+  const isAdmin = user?.email === import.meta.env.VITE_ADMIN_EMAIL;
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`${API_URL}/api/posts/${slug}`)
@@ -41,7 +53,17 @@ const BlogDetail = () => {
         {new Date(post.created_at).toLocaleDateString()} by {post.author}
       </p>
 
-      {/* Tags */}
+      {isAdmin && (
+        <div className="mb-4">
+          <button
+            onClick={() => navigate(`/admin/edit/${post.slug}`)}
+            className="bg-yellow-400 text-black px-4 py-1 rounded hover:bg-yellow-500 text-sm"
+          >
+            ✏️ Edit This Post
+          </button>
+        </div>
+      )}
+
       {post.tags && (
         <div className="mb-4 flex flex-wrap gap-2">
           {post.tags.split(",").map((tag) => (
@@ -55,7 +77,6 @@ const BlogDetail = () => {
         </div>
       )}
 
-      {/* Image */}
       {post.image_url && (
         <img
           src={post.image_url}
@@ -64,13 +85,11 @@ const BlogDetail = () => {
         />
       )}
 
-      {/* Content */}
       <div
         className="whitespace-pre-wrap font-mono text-sm overflow-x-auto"
         dangerouslySetInnerHTML={{ __html: post.content }}
       />
 
-      {/* Social Sharing */}
       <div className="mt-6 flex gap-4">
         <a
           href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
@@ -92,7 +111,6 @@ const BlogDetail = () => {
         </a>
       </div>
 
-      {/* Related Posts */}
       <div className="mt-10 border-t pt-6">
         <h2 className="text-xl font-semibold mb-2">🔁 Related Posts</h2>
         {related.length === 0 ? (

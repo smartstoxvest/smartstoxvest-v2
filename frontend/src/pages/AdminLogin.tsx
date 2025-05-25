@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext"; // ✅ import context
 
 const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { setIsAdminVerified } = useAuth(); // ✅ grab context
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(""); // Clear previous error
+
     try {
       const response = await fetch(import.meta.env.VITE_API_URL + "/admin/login", {
         method: "POST",
@@ -17,16 +21,39 @@ const AdminLogin = () => {
         body: JSON.stringify({ password }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("loginTime", Date.now().toString());
-        navigate("/app/admin/new-post");
-      } else {
+      const text = await response.text();
+      console.log("📦 Raw response text:", text);
+
+      if (!response.ok) {
+        console.error("❌ Admin login failed with status:", response.status);
         setError("Invalid password");
+        return;
       }
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        console.error("❌ Failed to parse JSON:", err);
+        setError("Invalid server response");
+        return;
+      }
+
+      console.log("🪪 Parsed token:", data.access_token);
+
+      if (!data.access_token) {
+        setError("Access token not found in response");
+        return;
+      }
+
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("loginTime", Date.now().toString());
+
+      setIsAdminVerified(true); // ✅ Set context state
+      navigate("/admin/new-post"); // ✅ Route to New Post
+
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("⚠️ Login request failed:", err);
       setError("Something went wrong. Try again later.");
     }
   };
@@ -37,7 +64,7 @@ const AdminLogin = () => {
       <form onSubmit={handleLogin}>
         <input
           type="password"
-		  autoComplete="new-password"  // ✅ Fixes the warning
+          autoComplete="new-password"
           placeholder="Enter admin password"
           className="border px-4 py-2 w-full mb-3"
           value={password}
@@ -51,6 +78,12 @@ const AdminLogin = () => {
           Login
         </button>
       </form>
+	  <p className="text-sm text-center mt-4">
+		<a href="/forgot-password" className="text-blue-600 hover:underline">
+		Forgot password?
+		</a>
+	  </p>
+
     </div>
   );
 };

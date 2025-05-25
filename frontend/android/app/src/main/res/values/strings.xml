@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">smartstoxvest</string>
+    <string name="title_activity_main">smartstoxvest</string>
+    <string name="package_name">com.smartstoxvest.app</string>
+    <string name="custom_url_scheme">com.smartstoxvest.app</string>
+</resources>

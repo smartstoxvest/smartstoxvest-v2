@@ -1,21 +1,34 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+
+// ✅ Define User and Auth types (or import if globally defined)
+interface User {
+  email: string;
+}
+
+interface AuthContextType {
+  user: User | null;
+}
+
 const API_URL = import.meta.env.VITE_API_URL;
 
-
-type BlogPost = {
+interface BlogPost {
   id: number;
   title: string;
   slug: string;
-  tags: string; // updated: not an array
+  tags: string;
   author: string;
   content: string;
   image_url?: string;
   created_at: string;
-};
+}
 
 const BlogList = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const { user } = useAuth() as AuthContextType;
+
+  const isAdmin = user?.email === import.meta.env.VITE_ADMIN_EMAIL;
 
   useEffect(() => {
     fetch(`${API_URL}/api/posts`)
@@ -59,16 +72,18 @@ const BlogList = () => {
           )}
 
           <div
-			className="whitespace-pre-wrap font-mono text-sm overflow-x-auto"
-			dangerouslySetInnerHTML={{ __html: post.content }}
-		  />
+            className="whitespace-pre-wrap font-mono text-sm overflow-x-auto"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
 
-          <Link
-            to={`/admin/edit/${post.slug}`}
-            className="text-sm text-green-600 hover:underline"
-          >
-            ✏️ Edit Post
-          </Link>
+          {isAdmin && (
+            <Link
+              to={`/admin/edit/${post.slug}`}
+              className="text-sm text-green-600 hover:underline mt-2 block"
+            >
+              ✏️ Edit Post
+            </Link>
+          )}
         </div>
       ))}
     </div>

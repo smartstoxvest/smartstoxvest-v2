@@ -1,18 +1,32 @@
-import { createContext, useState, useContext, useEffect } from "react";
-
-import { Outlet, NavLink, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, Sun, Moon } from "lucide-react";
+import { useState, useEffect, createContext, useContext, ReactNode } from "react";
+import Navbar from "@/components/Navbar";
+import useAuth from "@/hooks/useAuth";
 
-// Create dark mode context
-export const DarkModeContext = createContext({ darkMode: false, toggleDarkMode: () => {} });
+// 👇 Define user type here or import it from hooks/useAuth if declared there
+interface User {
+  email: string;
+}
 
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+}
+
+export const DarkModeContext = createContext({
+  darkMode: false,
+  toggleDarkMode: () => {},
+});
 export const useDarkMode = () => useContext(DarkModeContext);
 
 const Layout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
+  const { user, loading } = useAuth() as AuthContextType;
 
   useEffect(() => {
     if (darkMode) {
@@ -26,14 +40,19 @@ const Layout = () => {
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("loginTime");
+    navigate("/auth");
+  };
+
   return (
     <DarkModeContext.Provider value={{ darkMode, toggleDarkMode }}>
-      <div className="flex h-screen overflow-hidden dark:bg-gray-950 dark:text-white">
-        {/* Sidebar */}
+      <div className="flex flex-col md:flex-row h-screen overflow-hidden dark:bg-gray-950 dark:text-white">
         <aside
-          className={`${
+          className={`hidden md:flex ${
             sidebarOpen ? "w-64" : "w-16"
-          } bg-gray-900 text-white flex flex-col p-4 transition-all duration-300`}
+          } bg-gray-900 text-white flex-col p-4 transition-all duration-300`}
         >
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -41,57 +60,40 @@ const Layout = () => {
           >
             <Menu size={24} />
           </button>
-          <h2 className={`text-2xl font-bold mb-6 ${!sidebarOpen ? "hidden" : "block"}`}>SmartStoxVest</h2>
-          <nav className="flex flex-col gap-4">
-            <NavLink
-              to="/"
-              className={({ isActive }) =>
-                isActive ? "font-semibold text-blue-400" : "text-gray-300"
-              }
-            >
-              🏠 {sidebarOpen && "Dashboard"}
-            </NavLink>
-            <NavLink
-              to="/short-term"
-              className={({ isActive }) =>
-                isActive ? "font-semibold text-blue-400" : "text-gray-300"
-              }
-            >
-              ⚡ {sidebarOpen && "Short-Term"}
-            </NavLink>
-            <NavLink
-              to="/medium-term"
-              className={({ isActive }) =>
-                isActive ? "font-semibold text-blue-400" : "text-gray-300"
-              }
-            >
-              🔮 {sidebarOpen && "Medium-Term"}
-            </NavLink>
-            <NavLink
-              to="/long-term"
-              className={({ isActive }) =>
-                isActive ? "font-semibold text-blue-400" : "text-gray-300"
-              }
-            >
-              🧠 {sidebarOpen && "Long-Term"}
-            </NavLink>
-          </nav>
+          <h2 className={`text-2xl font-bold mb-6 ${!sidebarOpen ? "hidden" : "block"}`}>
+            SmartStoxVest
+          </h2>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 bg-white dark:bg-gray-900 p-6 overflow-auto">
-          {/* Topbar */}
+          <Navbar />
+
           <header className="mb-4 border-b pb-2 flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-700 dark:text-white">📈 Investment Dashboard</h1>
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700"
-            >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
+            <h1 className="text-2xl font-semibold text-gray-700 dark:text-white">
+              📈 Investment Dashboard
+            </h1>
+
+            <div className="flex items-center gap-4">
+              {!loading && user && (
+                <div className="text-sm flex items-center gap-2">
+                  <span className="text-gray-700 dark:text-gray-200">👋 {user.email}</span>
+                  <button
+                    onClick={handleLogout}
+                    className="text-red-600 text-sm underline ml-2 hover:text-red-800"
+                  >
+                    🔓 Logout
+                  </button>
+                </div>
+              )}
+              <button
+                onClick={toggleDarkMode}
+                className="p-2 rounded bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700"
+              >
+                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+            </div>
           </header>
 
-          {/* Animated Page Content */}
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
