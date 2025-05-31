@@ -7,11 +7,11 @@ export default function Landing() {
       <PublicNavbar />
 
       {/* 🔔 Ticker Banner */}
-      <div className="bg-blue-900 text-white text-sm py-2 px-4">
-        <marquee>
-          📈 SENSEX 81,451 ▼ -182 | NIFTY 50 ▼ | NASDAQ 21,232 ▼ | S&P 500 5,892 ▼ | Multibagger alert 🚀
-        </marquee>
-      </div>
+      <div className="bg-blue-900 text-white text-sm py-2 px-4 overflow-hidden whitespace-nowrap">
+		<div className="animate-marquee inline-block">
+			📈 SENSEX 81,451 ▼ -182 | NIFTY 50 ▼ | NASDAQ 21,232 ▼ | S&P 500 5,892 ▼ | Multibagger alert 🚀
+		</div>
+	  </div>
 
       {/* 🚀 Hero Dashboard */}
       <section className="bg-blue-50 py-20 px-4 text-center">
