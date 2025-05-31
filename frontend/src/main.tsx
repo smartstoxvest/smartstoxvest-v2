@@ -21,7 +21,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             <AppRoutes />
           </HashRouter>
         ) : (
-          <BrowserRouter basename="/app">
+          <BrowserRouter>
             <AppRoutes />
           </BrowserRouter>
         )}
