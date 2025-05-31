@@ -1,17 +1,38 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import PublicNavbar from "@/components/PublicNavbar";
 
 export default function Landing() {
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      symbols: [
+        { proName: "FOREXCOM:SPXUSD", title: "S&P 500" },
+        { proName: "FOREXCOM:NSXUSD", title: "NASDAQ" },
+        { proName: "BSE:SENSEX", title: "SENSEX" },
+        { proName: "NSE:NIFTY", title: "NIFTY 50" },
+        { proName: "FOREXCOM:DJI", title: "Dow Jones" },
+      ],
+      colorTheme: "light",
+      isTransparent: false,
+      displayMode: "adaptive",
+      locale: "en",
+    });
+    const container = document.getElementById("ticker-tape-container");
+    if (container) {
+      container.innerHTML = "";
+      container.appendChild(script);
+    }
+  }, []);
+
   return (
     <>
       <PublicNavbar />
 
-      {/* 🔔 Ticker Banner */}
-      <div className="bg-blue-900 text-white text-sm py-2 px-4 overflow-hidden whitespace-nowrap">
-        <div className="animate-marquee inline-block">
-          📈 SENSEX 81,451 ▼ -182 | NIFTY 50 ▼ | NASDAQ 21,232 ▼ | S&P 500 5,892 ▼ | Multibagger alert 🚀
-        </div>
-      </div>
+      {/* 🔔 TradingView Ticker Banner */}
+      <div id="ticker-tape-container" className="w-full" />
 
       {/* 🚀 Hero Dashboard */}
       <section className="bg-blue-50 py-16 px-4 text-center">
