@@ -8,7 +8,6 @@ import RecommendedTools from "@/pages/RecommendedTools";
 import Blog from "@/pages/Blog";
 import BlogDetail from "@/pages/BlogDetail";
 import Layout from "@/components/Layout";
-import { ForgotPassword, ResetPassword } from "./pages/ForgotAndResetPassword";
 import Landing from "./pages/Landing";
 import ThankYou from "./pages/ThankYou";
 
@@ -60,8 +59,6 @@ const AppRoutes = () => {
         {/* 🔓 Public Routes – No Layout */}
         <Route path="/" element={<Landing />} />
         <Route path="/thank-you" element={<ThankYou />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* 🔐 App Routes without Layout for clean tool views */}
         <Route path="/app/short-term" element={<ShortTerm />} />

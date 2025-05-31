@@ -21,7 +21,6 @@
     "easy-peasy": "^6.1.0",
     "easymde": "^2.20.0",
     "framer-motion": "^12.7.4",
-    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.503.0",
     "path": "^0.12.7",
     "plotly.js": "^3.0.1",
