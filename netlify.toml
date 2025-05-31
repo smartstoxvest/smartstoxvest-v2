@@ -3,11 +3,17 @@
   publish = "dist"
 
 [build.environment]
-  VITE_API_URL = "https://your-api-url"
+  VITE_API_URL = "https://smartstoxvest-v2-backend.onrender.com"
   VITE_ADMIN_TOKEN = "my-secret-token"
   VITE_ADMIN_PASSWORD = "admin123"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/"
+  to = "/app"
+  status = 301
+
+[[redirects]]
+  from = "/app/*"
+  to = "/app/index.html"
   status = 200
+
