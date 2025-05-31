@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from db import init_db
+from routers import oauth  # import at top
 
 # ✅ Load environment variables
 load_dotenv()
@@ -35,6 +36,7 @@ app.include_router(chart_data.router)
 app.include_router(admin.router)
 app.include_router(blog.router)
 app.include_router(auth.router)  # ✅ Centralized auth routes
+app.include_router(oauth.router)  # add this to your routers section
 
 # ✅ CORS setup
 app.add_middleware(

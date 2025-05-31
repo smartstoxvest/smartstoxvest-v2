@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import LSTMChart from "@/components/LSTMChart";
 import { Button } from "@/components/ui/button";
+import TopNavigation from "@/components/TopNavigation"; // add this at the top
+
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -88,6 +90,7 @@ const MediumTerm = () => {
 
   return (
     <div className="p-6">
+	 <TopNavigation />
       <h1 className="text-4xl font-bold mb-8 flex items-center gap-3">
         📊 Medium-Term Stock Analysis
       </h1>

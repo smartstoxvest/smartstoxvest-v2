@@ -1,41 +1,20 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import ShortTerm from "@/pages/ShortTerm";
 import MediumTerm from "@/pages/MediumTerm";
 import LongTerm from "@/pages/LongTerm";
 import Dashboard from "@/pages/Dashboard";
 import RecommendedTools from "@/pages/RecommendedTools";
-import NewPost from "@/pages/NewPost";
-import EditPost from "@/pages/EditPost";
 import Blog from "@/pages/Blog";
 import BlogDetail from "@/pages/BlogDetail";
-import AdminLogin from "@/pages/AdminLogin";
-import RequireAdmin from "@/components/RequireAdmin";
 import Layout from "@/components/Layout";
-import { useEffect, useState } from "react";
-import AuthUI from "@/pages/AuthUI";
-import RequireAuth from "@/components/RequireAuth";
-import useAuth from "@/hooks/useAuth";
-import AdminUsers from "@/pages/AdminUsers";
 import { ForgotPassword, ResetPassword } from "./pages/ForgotAndResetPassword";
-
+import Landing from "./pages/Landing";
+import ThankYou from "./pages/ThankYou";
 
 const AppRoutes = () => {
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
-
-  useEffect(() => {
-    const checkAdmin = () => {
-      const token = localStorage.getItem("token");
-      const envToken = import.meta.env.VITE_ADMIN_TOKEN;
-      setIsAdmin(token === envToken);
-    };
-
-    checkAdmin();
-    window.addEventListener("storage", checkAdmin);
-    return () => window.removeEventListener("storage", checkAdmin);
-  }, []);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -78,23 +57,26 @@ const AppRoutes = () => {
       )}
 
       <Routes>
-        <Route element={<Layout />}>
-		  <Route path="/admin/users" element={<RequireAdmin><AdminUsers /></RequireAdmin>} />
-          <Route path="/auth" element={<AuthUI />} />
-		  <Route path="/forgot-password" element={<ForgotPassword />} />
-		  <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/" element={<RequireAuth><Dashboard /></RequireAuth>} />
-          <Route path="/short-term" element={<RequireAuth><ShortTerm /></RequireAuth>} />
-          <Route path="/medium-term" element={<RequireAuth><MediumTerm /></RequireAuth>} />
-          <Route path="/long-term" element={<RequireAuth><LongTerm /></RequireAuth>} />
-          <Route path="/tools" element={<RecommendedTools />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:slug" element={<BlogDetail />} />
+        {/* 🔓 Public Routes – No Layout */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/thank-you" element={<ThankYou />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* 🔐 App Routes without Layout for clean tool views */}
+        <Route path="/app/short-term" element={<ShortTerm />} />
+        <Route path="/app/medium-term" element={<MediumTerm />} />
+        <Route path="/app/long-term" element={<LongTerm />} />
+
+        {/* Optional routes with layout for dashboard/blog/tools */}
+        <Route path="/app" element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="tools" element={<RecommendedTools />} />
+          <Route path="blog" element={<Blog />} />
+          <Route path="blog/:slug" element={<BlogDetail />} />
         </Route>
 
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin/new-post" element={<RequireAdmin><NewPost /></RequireAdmin>} />
-        <Route path="/admin/edit/:slug" element={<RequireAdmin><EditPost /></RequireAdmin>} />
+        {/* 🔁 Catch-all Redirect */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </>

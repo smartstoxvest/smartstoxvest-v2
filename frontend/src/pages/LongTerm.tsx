@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import TopNavigation from "@/components/TopNavigation"; // add this at the top
+
 import {
   Chart as ChartJS,
   LineElement,
@@ -133,6 +135,7 @@ const LongTerm: React.FC = () => {
 
   return (
     <div className="px-6 py-8">
+	 <TopNavigation />
       <h1 className="text-4xl font-bold mb-8 flex items-center gap-3">
         <span role="img">📉</span> Long-Term Risk Analysis
       </h1>

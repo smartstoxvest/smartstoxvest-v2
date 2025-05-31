@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import StockChart from "@/components/StockChart"; // make sure path matches
+import TopNavigation from "@/components/TopNavigation"; // add this at the top
+
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -117,6 +119,7 @@ const ShortTerm = () => {
 
   return (
     <div className="p-6">
+	<TopNavigation />
       <h1 className="text-4xl font-bold mb-8 flex items-center gap-3">
         🚀 Short-Term Stock Analysis
       </h1>

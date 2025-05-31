@@ -1,3 +1,4 @@
+# db.py
 from sqlmodel import create_engine, Session, SQLModel
 from models import User, BlogPost  # ✅ import your models
 
@@ -9,5 +10,7 @@ engine = create_engine(sqlite_url, echo=True)
 def init_db():
     SQLModel.metadata.create_all(engine)
 
+# ✅ For FastAPI dependency injection
 def get_session():
-    return Session(engine)
+    with Session(engine) as session:
+        yield session

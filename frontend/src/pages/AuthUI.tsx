@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
+import jwt_decode from 'jwt-decode';
 
 // ✅ Define the user and context types
 interface User {
@@ -46,7 +48,7 @@ const AuthUI = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(me.data);
-        navigate('/');
+        navigate("/app");
       } else if (mode === 'signup') {
         await api.post('/auth/signup', { email, password });
         setMode('login');
@@ -163,6 +165,51 @@ const AuthUI = () => {
             </>
           )}
         </p>
+		{/* Divider */}
+<div className="relative my-2">
+  <div className="absolute inset-0 flex items-center">
+    <div className="w-full border-t border-gray-300" />
+  </div>
+  <div className="relative flex justify-center text-sm">
+    <span className="bg-white px-2 text-gray-500">or</span>
+  </div>
+</div>
+
+{/* Google Login */}
+<div className="flex justify-center">
+  <GoogleLogin
+    onSuccess={async (credentialResponse: CredentialResponse) => {
+  try {
+    const res = await fetch("http://localhost:8000/auth/google/callback", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        credential: credentialResponse.credential, // THIS is what your backend needs
+      }),
+    });
+
+    const data = await res.json();
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+      setUser({ email: data.email });
+      navigate("/app");
+    } else {
+      toast.error("Google login failed.");
+    }
+  } catch (err) {
+    console.error("Google login error:", err);
+    toast.error("Something went wrong with Google login.");
+  }
+}}
+
+    onError={() => {
+      toast.error("Google login failed.");
+    }}
+  />
+</div>
+
       </form>
     </div>
   );
