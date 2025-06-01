@@ -16,7 +16,7 @@ import BlogList from "@/pages/BlogList";
 import AdminLogin from "@/pages/AdminLogin";
 
 // Layout
-import TopNavLayout from "@/layouts/TopNavLayout";
+import TopNavLayout from "@/Layouts/TopNavLayout";
 
 const AppRoutes = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
