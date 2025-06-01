@@ -67,10 +67,10 @@ const AppRoutes = () => {
         <Route path="/thank-you" element={<ThankYou />} />
 
         {/* 📈 Main Features */}
-        <Route path="/app/short-term" element={<ShortTerm />} />
-        <Route path="/app/medium-term" element={<MediumTerm />} />
-        <Route path="/app/long-term" element={<LongTerm />} />
-        <Route path="/app/tools" element={<RecommendedTools />} />
+        <Route path="/app/short-term" element={<TopNavLayout><ShortTerm /></TopNavLayout>} />
+        <Route path="/app/medium-term" element={<TopNavLayout><MediumTerm /></TopNavLayout>} />
+        <Route path="/app/long-term" element={<TopNavLayout><LongTerm /></TopNavLayout>} />
+        <Route path="/app/tools" element={<TopNavLayout><RecommendedTools /></TopNavLayout>} />
 
         {/* 📝 Blog */}
         <Route path="/app/blog" element={<TopNavLayout><Blog /></TopNavLayout>} />
