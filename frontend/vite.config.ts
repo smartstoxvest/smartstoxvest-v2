@@ -4,18 +4,18 @@ import path from 'path';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  base: '/', // ✅ This is the key fix
+  base: '/', // 🚀 Makes sure routing works correctly on GitHub/Netlify
   plugins: [
     react(),
     VitePWA({
       registerType: 'prompt',
       workbox: {
-        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // ✅ 10 MB
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // ✅ 10 MB cache
       },
       manifest: {
         name: 'SmartStoxVest',
         short_name: 'SmartStox',
-        start_url: '/app/', // ✅ also update start_url
+        start_url: '/app/', // 🏁 Ensures app loads from /app on PWA install
         display: 'standalone',
         background_color: '#ffffff',
         theme_color: '#2563eb',
@@ -36,7 +36,13 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(__dirname, './src'), // ✨ Cleaner imports using '@'
+    },
+  },
+  server: {
+    fs: {
+      strict: true,
+      allow: ['src'], // 🔒 Prevents access to unintended file paths
     },
   },
 });
