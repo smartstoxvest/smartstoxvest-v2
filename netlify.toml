@@ -1,6 +1,7 @@
 [build]
+  base = "frontend"                 # 👈 Enter the frontend folder first
   command = "npm install && npm run build"
-  publish = "dist"
+  publish = "dist"                 # 👈 This is inside /frontend/dist after build
 
 [build.environment]
   VITE_API_URL = "https://smartstoxvest-v2-backend.onrender.com"
@@ -16,4 +17,3 @@
   from = "/app/*"
   to = "/app/index.html"
   status = 200
-
