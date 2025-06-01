@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { useAuth } from "@/contexts/AuthContext";
+import TopNavigation from "@/components/TopNavigation";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -64,70 +65,74 @@ const BlogPost = () => {
     currentIndex > 0 ? allPosts[currentIndex - 1] : null;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 text-gray-800">
-      <h1 className="text-3xl font-bold mb-2">{post.title}</h1>
-      <p className="text-sm text-gray-500 mb-6">
-        {new Date(post.created_at).toLocaleDateString()} | Tags: {post.tags}{" "}
-        {post.author && `| By ${post.author}`}
-      </p>
+    <>
+      <TopNavigation />
 
-      {isAdmin && (
-        <Link
-          to={`/admin/edit/${post.slug}`}
-          className="text-blue-600 hover:underline text-sm block mb-4"
-        >
-          ✏️ Edit This Post
-        </Link>
-      )}
+      <div className="max-w-4xl mx-auto px-6 py-8 text-gray-800">
+        <h1 className="text-3xl font-bold mb-2">{post.title}</h1>
+        <p className="text-sm text-gray-500 mb-6">
+          {new Date(post.created_at).toLocaleDateString()} | Tags: {post.tags}{" "}
+          {post.author && `| By ${post.author}`}
+        </p>
 
-      <div className="prose prose-lg max-w-none text-justify mb-8">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          rehypePlugins={[rehypeRaw]}
-          components={{
-            img: ({ src, alt }) => (
-              <img
-                src={`${API_URL}${src}`}
-                alt={alt}
-                className="max-w-full h-auto rounded-lg my-4"
-              />
-            ),
-          }}
-        >
-          {post.content}
-        </ReactMarkdown>
-      </div>
-
-      <div className="flex justify-between border-t pt-6 mt-6 text-sm">
-        {prevPost ? (
+        {isAdmin && (
           <Link
-            to={`/blog/${prevPost.slug}`}
-            className="text-blue-600 hover:underline"
+            to={`/app/admin/edit/${post.slug}`}
+            className="text-blue-600 hover:underline text-sm block mb-4"
           >
-            ← {prevPost.title}
+            ✏️ Edit This Post
           </Link>
-        ) : (
-          <span />
         )}
 
-        {nextPost ? (
-          <Link
-            to={`/blog/${nextPost.slug}`}
-            className="text-blue-600 hover:underline ml-auto"
+        <div className="prose prose-lg max-w-none text-justify mb-8">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
+            components={{
+              img: ({ src, alt }) => (
+                <img
+                  src={`${API_URL}${src}`}
+                  alt={alt}
+                  className="max-w-full h-auto rounded-lg my-4"
+                />
+              ),
+            }}
           >
-            {nextPost.title} →
-          </Link>
-        ) : (
-          <span />
-        )}
-      </div>
+            {post.content}
+          </ReactMarkdown>
+        </div>
 
-      <div className="pt-4 border-t mt-6">
-        <Link to="/blog" className="text-blue-600 hover:underline text-sm">
-          ← Back to Blog
-        </Link>
+        <div className="flex justify-between border-t pt-6 mt-6 text-sm">
+          {prevPost ? (
+            <Link
+              to={`/app/blog/${prevPost.slug}`}
+              className="text-blue-600 hover:underline"
+            >
+              ← {prevPost.title}
+            </Link>
+          ) : (
+            <span />
+          )}
+
+          {nextPost ? (
+            <Link
+              to={`/app/blog/${nextPost.slug}`}
+              className="text-blue-600 hover:underline ml-auto"
+            >
+              {nextPost.title} →
+            </Link>
+          ) : (
+            <span />
+          )}
+        </div>
+
+        <div className="pt-4 border-t mt-6">
+          <Link to="/app/blog" className="text-blue-600 hover:underline text-sm">
+            ← Back to Blog
+          </Link>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

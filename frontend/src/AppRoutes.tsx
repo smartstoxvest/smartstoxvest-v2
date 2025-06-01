@@ -1,25 +1,31 @@
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+
+// Pages
 import ShortTerm from "@/pages/ShortTerm";
 import MediumTerm from "@/pages/MediumTerm";
 import LongTerm from "@/pages/LongTerm";
-import Dashboard from "@/pages/Dashboard";
+import Landing from "@/pages/Landing";
+import ThankYou from "@/pages/ThankYou";
 import RecommendedTools from "@/pages/RecommendedTools";
 import Blog from "@/pages/Blog";
 import BlogDetail from "@/pages/BlogDetail";
-import Layout from "@/components/Layout";
-import Landing from "./pages/Landing";
-import ThankYou from "./pages/ThankYou";
+import NewPost from "@/pages/NewPost";
+import EditPost from "@/pages/EditPost";
+import BlogList from "@/pages/BlogList";
+import AdminLogin from "@/pages/AdminLogin";
+
+// Layout
+import TopNavLayout from "@/layouts/TopNavLayout";
 
 const AppRoutes = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      console.log("✅ beforeinstallprompt captured");
+      console.log("✅ PWA install prompt captured");
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
@@ -33,9 +39,9 @@ const AppRoutes = () => {
       deferredPrompt.prompt();
       deferredPrompt.userChoice.then((choiceResult: any) => {
         if (choiceResult.outcome === "accepted") {
-          console.log("🎉 User installed the app");
+          console.log("🎉 PWA installed");
         } else {
-          console.log("❌ User dismissed the install");
+          console.log("❌ PWA install dismissed");
         }
         setDeferredPrompt(null);
       });
@@ -45,7 +51,7 @@ const AppRoutes = () => {
   return (
     <>
       {deferredPrompt && (
-        <div className="p-4">
+        <div className="p-4 text-center">
           <button
             onClick={handleInstallClick}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
@@ -56,24 +62,27 @@ const AppRoutes = () => {
       )}
 
       <Routes>
-        {/* 🔓 Public Routes – No Layout */}
+        {/* 🏠 Public */}
         <Route path="/" element={<Landing />} />
         <Route path="/thank-you" element={<ThankYou />} />
 
-        {/* 🔐 App Routes without Layout for clean tool views */}
+        {/* 📈 Main Features */}
         <Route path="/app/short-term" element={<ShortTerm />} />
         <Route path="/app/medium-term" element={<MediumTerm />} />
         <Route path="/app/long-term" element={<LongTerm />} />
+        <Route path="/app/tools" element={<RecommendedTools />} />
 
-        {/* Optional routes with layout for dashboard/blog/tools */}
-        <Route path="/app" element={<Layout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="tools" element={<RecommendedTools />} />
-          <Route path="blog" element={<Blog />} />
-          <Route path="blog/:slug" element={<BlogDetail />} />
-        </Route>
+        {/* 📝 Blog */}
+        <Route path="/app/blog" element={<TopNavLayout><Blog /></TopNavLayout>} />
+        <Route path="/app/blog/:slug" element={<TopNavLayout><BlogDetail /></TopNavLayout>} />
 
-        {/* 🔁 Catch-all Redirect */}
+        {/* 🔐 Admin */}
+        <Route path="/app/admin/login" element={<AdminLogin />} />
+        <Route path="/app/admin/new" element={<TopNavLayout><NewPost /></TopNavLayout>} />
+        <Route path="/app/admin/edit/:slug" element={<TopNavLayout><EditPost /></TopNavLayout>} />
+        <Route path="/app/admin/blogs" element={<TopNavLayout><BlogList /></TopNavLayout>} />
+
+        {/* 🔁 Fallback */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </>

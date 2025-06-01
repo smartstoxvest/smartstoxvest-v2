@@ -14,6 +14,7 @@ const TopNavigation = () => {
       <Link to="/app/short-term" className={linkClass("/app/short-term")}>Short-Term</Link>
       <Link to="/app/medium-term" className={linkClass("/app/medium-term")}>Medium-Term</Link>
       <Link to="/app/long-term" className={linkClass("/app/long-term")}>Long-Term</Link>
+	  <Link to="/app/blog" className={linkClass("/app/blog")}>Blog</Link>
       <Link to="/" className="text-gray-600 hover:underline">🏠 Home</Link>
     </div>
   );

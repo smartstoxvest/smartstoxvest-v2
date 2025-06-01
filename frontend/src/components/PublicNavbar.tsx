@@ -23,7 +23,7 @@ export default function PublicNavbar() {
           <a href="#team" className="hover:text-blue-500">Team</a>
           <a href="#features" className="hover:text-blue-500">Features</a>
           <a href="#feedback" className="hover:text-blue-500">Feedback</a>
-          <a href="#feedback" className="hover:text-blue-500">Blog</a>
+          <a href="/app/blog" className="hover:text-blue-500">Blog</a>
           <a href="#FAQ" className="hover:text-blue-500">FAQ</a>
           <a href="/SmartStoxVest_User_Manual.pdf" download className="text-blue-600 underline">User Manual</a>
         </nav>
@@ -45,7 +45,7 @@ export default function PublicNavbar() {
           <a href="#team" onClick={() => setMenuOpen(false)} className="block hover:text-blue-500">Team</a>
           <a href="#features" onClick={() => setMenuOpen(false)} className="block hover:text-blue-500">Features</a>
           <a href="#feedback" onClick={() => setMenuOpen(false)} className="block hover:text-blue-500">Feedback</a>
-          <a href="#feedback" onClick={() => setMenuOpen(false)} className="block hover:text-blue-500">Blog</a>
+          <a href="/app/blog" className="hover:text-blue-500">Blog</a> {/* ✅ Fixed */}
           <a href="#FAQ" onClick={() => setMenuOpen(false)} className="block hover:text-blue-500">FAQ</a>
           <a href="/SmartStoxVest_User_Manual.pdf" download onClick={() => setMenuOpen(false)} className="block text-blue-600 underline">User Manual</a>
         </div>

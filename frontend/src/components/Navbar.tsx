@@ -56,7 +56,7 @@ const Navbar = () => {
       <Link to="/tools" className="block px-4 py-2 hover:text-blue-600" onClick={onClick}>
         🧰 Tools
       </Link>
-      <Link to="/blog" className="block px-4 py-2 hover:text-blue-600" onClick={onClick}>
+      <Link to="/app/blog" className="block px-4 py-2 hover:text-blue-600" onClick={onClick}>
         📄 Blog
       </Link>
 
