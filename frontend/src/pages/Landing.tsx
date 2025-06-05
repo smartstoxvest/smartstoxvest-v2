@@ -2,8 +2,30 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import PublicNavbar from "@/components/PublicNavbar";
 
+const GA_ID = import.meta.env.VITE_GA_ID;
+
 export default function Landing() {
   useEffect(() => {
+    // Inject Google Analytics script
+    if (!GA_ID) return;
+
+    const script = document.createElement("script");
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+    script.async = true;
+    document.head.appendChild(script);
+
+    const inlineScript = document.createElement("script");
+    inlineScript.innerHTML = `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '${GA_ID}');
+    `;
+    document.head.appendChild(inlineScript);
+  }, []);
+
+  useEffect(() => {
+    // TradingView Ticker Tape Widget
     const script = document.createElement("script");
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
     script.async = true;
