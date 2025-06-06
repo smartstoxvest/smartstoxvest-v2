@@ -1,16 +1,16 @@
-# db.py
+import os
 from sqlmodel import create_engine, Session, SQLModel
-from models import User, BlogPost  # ✅ import your models
+from dotenv import load_dotenv
 
-sqlite_file_name = "blog.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
+load_dotenv()
 
-engine = create_engine(sqlite_url, echo=True)
+DATABASE_URL = os.getenv("NEON_DATABASE_URL")  # Add this to your .env file
+
+engine = create_engine(DATABASE_URL, echo=True)
 
 def init_db():
     SQLModel.metadata.create_all(engine)
 
-# ✅ For FastAPI dependency injection
 def get_session():
     with Session(engine) as session:
         yield session
