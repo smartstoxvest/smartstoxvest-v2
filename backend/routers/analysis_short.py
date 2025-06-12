@@ -1,4 +1,5 @@
-// ✅ Enhanced backend decision logic for better balance between strict filtering and opportunity
+# Enhanced backend decision logic for better balance between strict filtering and opportunity
+
 from fastapi import APIRouter
 from pydantic import BaseModel
 from backend.services.indicators import calculate_rsi, calculate_atr
@@ -88,7 +89,7 @@ def short_term_predict(data: ShortTermRequest):
         news_decision, sentiment = get_news_decision(symbol)
         sentiment_score = 88 if "Positive" in news_decision else (70 if "Neutral" in news_decision else 50)
 
-        # Refined confidence logic
+        # Confidence logic
         confidence = "🔴 Low"
         if sentiment_score >= 85 and volume_spike > 50 and "Bullish" in trend and rsi < 70:
             confidence = "🟢 High"
@@ -99,7 +100,7 @@ def short_term_predict(data: ShortTermRequest):
         elif "Positive" in news_decision and volume_spike > -50:
             confidence = "🟡 Medium"
 
-        # Tightened skip logic
+        # Filter out weak signals
         if volume_spike < -50 or ("Bearish" in trend and confidence == "🔴 Low"):
             final_decision = "❌ Avoid (Low Interest or Bearish)"
         else:
