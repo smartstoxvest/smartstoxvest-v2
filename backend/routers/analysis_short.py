@@ -108,6 +108,8 @@ def short_term_predict(data: ShortTermRequest):
         if sentiment_score > 80: score += 2
         if volume_spike > 10: score += 1
         if confidence == "🟢 High": score += 2
+        if confidence == "🟡 Medium": score += 1
+        if "Rebound" in trend and rsi < 40: score += 1
 
         if volume_spike < -50 or ("Bearish" in trend and confidence == "🔴 Low"):
             final_decision = "❌ Avoid (Low Interest or Bearish)"
@@ -141,7 +143,6 @@ def short_term_predict(data: ShortTermRequest):
             "signal_conflict": "✅ No Conflict"
         })
 
-    # Fallback: If all are avoid, let the best scoring one be "Review Further"
     if all([r[2].startswith("❌") for r in all_final_decisions]) and len(all_final_decisions) > 0:
         best = sorted(all_final_decisions, key=lambda x: x[1], reverse=True)[0]
         for r in results:
