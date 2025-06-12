@@ -45,6 +45,7 @@ def short_term_predict(data: ShortTermRequest):
         return {"error": str(e), "trace": traceback.format_exc()}
 
     results = []
+    all_final_decisions = []
 
     for symbol in symbol_list:
         smart_symbol = apply_exchange_suffix(symbol, data.exchange)
@@ -89,7 +90,6 @@ def short_term_predict(data: ShortTermRequest):
         news_decision, sentiment = get_news_decision(symbol)
         sentiment_score = 88 if "Positive" in news_decision else (70 if "Neutral" in news_decision else 50)
 
-        # Confidence logic
         confidence = "🔴 Low"
         if sentiment_score >= 85 and volume_spike > 50 and "Bullish" in trend and rsi < 70:
             confidence = "🟢 High"
@@ -97,20 +97,21 @@ def short_term_predict(data: ShortTermRequest):
             confidence = "🟡 Medium"
         elif "Rebound" in trend and sentiment_score >= 70 and rsi < 65:
             confidence = "🟡 Medium"
+        elif "Rebound" in trend and "Positive" in news_decision and rsi < 75 and volume_spike > -70:
+            confidence = "🟡 Medium"
         elif "Positive" in news_decision and volume_spike > -50:
             confidence = "🟡 Medium"
 
-        # Filter out weak signals
+        score = 0
+        if "Bullish" in trend: score += 2
+        if rsi < 30: score += 1
+        if sentiment_score > 80: score += 2
+        if volume_spike > 10: score += 1
+        if confidence == "🟢 High": score += 2
+
         if volume_spike < -50 or ("Bearish" in trend and confidence == "🔴 Low"):
             final_decision = "❌ Avoid (Low Interest or Bearish)"
         else:
-            score = 0
-            if "Bullish" in trend: score += 2
-            if rsi < 30: score += 1
-            if sentiment_score > 80: score += 2
-            if volume_spike > 10: score += 1
-            if confidence == "🟢 High": score += 2
-
             if score >= 6:
                 final_decision = "🚀 Invest Strongly"
             elif score >= 4:
@@ -119,6 +120,8 @@ def short_term_predict(data: ShortTermRequest):
                 final_decision = "🤔 Review Further"
             else:
                 final_decision = "❌ Avoid"
+
+        all_final_decisions.append((symbol, score, final_decision))
 
         results.append({
             "symbol": symbol,
@@ -137,5 +140,12 @@ def short_term_predict(data: ShortTermRequest):
             "final_decision": final_decision,
             "signal_conflict": "✅ No Conflict"
         })
+
+    # Fallback: If all are avoid, let the best scoring one be "Review Further"
+    if all([r[2].startswith("❌") for r in all_final_decisions]) and len(all_final_decisions) > 0:
+        best = sorted(all_final_decisions, key=lambda x: x[1], reverse=True)[0]
+        for r in results:
+            if r["symbol"] == best[0] and best[1] >= 2:
+                r["final_decision"] = "🤔 Review Further"
 
     return results
