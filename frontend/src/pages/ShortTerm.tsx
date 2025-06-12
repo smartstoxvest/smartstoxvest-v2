@@ -1,4 +1,4 @@
-// 🔧 SmartStoxVest - Final ShortTerm.tsx (Full Features + Mobile Ready)
+// ✅ Updated frontend ShortTerm.tsx to match new backend logic and confidence-aware UI
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
@@ -38,10 +38,10 @@ interface ChartData {
 }
 
 const getBadgeClass = (finalDecision: string) => {
-  if (finalDecision.includes("Invest Strongly")) return "bg-green-600 text-white";
+  if (finalDecision.includes("Strongly")) return "bg-green-600 text-white";
   if (finalDecision.includes("Invest")) return "bg-green-400 text-white";
-  if (finalDecision.includes("Review Further") || finalDecision.includes("Hold Carefully")) return "bg-yellow-400 text-black";
-  if (finalDecision.includes("Hold") || finalDecision.includes("Avoid")) return "bg-red-500 text-white";
+  if (finalDecision.includes("Review") || finalDecision.includes("Hold")) return "bg-yellow-400 text-black";
+  if (finalDecision.includes("Avoid")) return "bg-red-500 text-white";
   return "bg-gray-400 text-white";
 };
 
@@ -201,23 +201,21 @@ const ShortTerm = () => {
                     <div><strong>Volume Spike:</strong> {res.volume_spike}</div>
                     <div><strong>Sentiment Score:</strong> {res.sentiment_score}</div>
                     <div><strong>Confidence:</strong> {res.confidence}</div>
-                    
                   </div>
 
                   <div className="mt-2 text-sm font-semibold">
                     <strong>Smart Verdict:</strong>{" "}
-                    {res.final_decision?.includes("Invest")
-                      ? "✅ Invest Now"
-                      : res.confidence === "High"
-                        ? "👀 Monitor Closely"
-                        : "❌ Avoid for Now"}
+                    {res.confidence === "🔴 Low"
+                      ? "❌ Avoid for Now"
+                      : res.final_decision?.includes("Invest")
+                        ? "✅ Invest Now"
+                        : "👀 Monitor Closely"}
                   </div>
                 </div>
               );
             })}
           </div>
 
-          {/* Chart section */}
           <div className="mt-10">
             <h2 className="text-lg font-semibold mb-2">📊 View Detailed Charts</h2>
             <select
