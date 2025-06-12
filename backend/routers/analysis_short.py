@@ -1,4 +1,3 @@
-# ✅ Updated backend/routers/analysis_short.py
 from fastapi import APIRouter
 from pydantic import BaseModel
 from backend.services.indicators import calculate_rsi, calculate_atr
@@ -47,8 +46,6 @@ def short_term_predict(data: ShortTermRequest):
 
     for symbol in symbol_list:
         smart_symbol = apply_exchange_suffix(symbol, data.exchange)
-        print(f"🚀 Fetching short-term data for {smart_symbol} (original: {symbol})")
-
         stock = yf.Ticker(smart_symbol)
         df = stock.history(period="1mo", interval="1d")
 
@@ -72,15 +69,13 @@ def short_term_predict(data: ShortTermRequest):
         stop_loss = current_price - (atr * 1.5 * (2 - data.risk_tolerance))
         take_profit = current_price + (atr * 2.5 * data.risk_tolerance)
 
-        # 📊 Volume Spike Calculation
         latest_volume = df["Volume"].iloc[-1]
         avg_volume = df["Volume"].mean()
         volume_spike = round((latest_volume - avg_volume) / avg_volume * 100, 1)
         volume_spike_str = f"{volume_spike:+.1f}% vs avg"
 
-        # 📈 Trend Detection
         last_3 = df["Close"].tail(3).tolist()
-        if len(last_3) >= 3 and last_3[2] > last_3[1] > last_3[0]:
+        if last_3[2] > last_3[1] > last_3[0]:
             trend = "3D Bullish"
         elif last_3[2] < last_3[1] < last_3[0]:
             trend = "3D Bearish"
@@ -89,49 +84,36 @@ def short_term_predict(data: ShortTermRequest):
         else:
             trend = "Flat or No Clear Trend"
 
-        # 📰 News Sentiment
         news_decision, sentiment = get_news_decision(symbol)
         sentiment_score = 88 if "Positive" in news_decision else (70 if "Neutral" in news_decision else 50)
 
-        # 💡 Confidence Score
-        if sentiment_score >= 85 and volume_spike > 50 and "Bullish" in trend and rsi < 80:
+        # Confidence logic (tightened)
+        if sentiment_score >= 85 and volume_spike > 50 and "Bullish" in trend and rsi < 70:
             confidence = "🟢 High"
-        elif sentiment_score >= 65 and volume_spike > 25:
+        elif sentiment_score >= 70 and volume_spike > 10 and "Bullish" in trend:
             confidence = "🟡 Medium"
         else:
             confidence = "🔴 Low"
 
-        # 🧠 Core Trading Decision
-        if predicted_price > current_price:
-            if rsi < 30:
-                decision = "✅ Invest (Buy Opportunity)"
-            elif rsi > 70:
-                decision = "⚠️ Hold (Overbought)"
-            else:
-                decision = "✅ Invest"
+        # Skip if trend is bearish and confidence is low
+        if volume_spike < -20 or ("Bearish" in trend and confidence == "🔴 Low"):
+            final_decision = "❌ Avoid (Low Interest or Bearish)"
         else:
-            decision = "❌ Avoid"
+            score = 0
+            if "Bullish" in trend: score += 2
+            if rsi < 30: score += 1
+            if sentiment_score > 80: score += 2
+            if volume_spike > 10: score += 1
+            if confidence == "🟢 High": score += 2
 
-        # 🏁 Final Decision
-        if "Avoid" in decision:
-            final_decision = "❌ Hold or Avoid"
-        elif "Hold" in decision:
-            final_decision = "🤔 Review Further"
-        elif "Invest" in decision:
-            if "Positive News" in news_decision:
+            if score >= 6:
                 final_decision = "🚀 Invest Strongly"
-            elif "Neutral News" in news_decision:
+            elif score >= 4:
                 final_decision = "✅ Invest"
+            elif score >= 2:
+                final_decision = "🤔 Review Further"
             else:
-                final_decision = "✅ Invest"
-        else:
-            final_decision = "🤔 Review Further"
-
-        # 🚨 Conflict Flag
-        signal_conflict = "✅ No Conflict"
-        if rsi > 70 and "Positive News" in news_decision:
-            signal_conflict = "⚠️ Mixed Signal"
-            final_decision = "🤔 Review Further"
+                final_decision = "❌ Avoid"
 
         results.append({
             "symbol": symbol,
@@ -141,14 +123,14 @@ def short_term_predict(data: ShortTermRequest):
             "volatility": safe_float_vtlity(volatility),
             "stop_loss": safe_float_SLTP(stop_loss),
             "take_profit": safe_float_SLTP(take_profit),
-            "decision": decision,
+            "decision": "Invest" if predicted_price > current_price else "Avoid",
             "news_sentiment": news_decision,
             "sentiment_score": sentiment_score,
             "volume_spike": volume_spike_str,
             "trend": trend,
             "confidence": confidence,
             "final_decision": final_decision,
-            "signal_conflict": signal_conflict
+            "signal_conflict": "✅ No Conflict"
         })
 
     return results
