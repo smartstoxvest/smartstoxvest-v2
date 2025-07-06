@@ -45,6 +45,7 @@ export default function PublicNavbar() {
           <a href="#mission" onClick={() => setMenuOpen(false)} className="block hover:text-blue-500">Mission</a>
           <a href="#team" onClick={() => setMenuOpen(false)} className="block hover:text-blue-500">Team</a>
           <a href="#features" onClick={() => setMenuOpen(false)} className="block hover:text-blue-500">Features</a>
+          <a href="https://smart-portfolio-tracker.netlify.app/" className="hover:text-blue-500">PortFolio Tracker</a>
           <a href="#feedback" onClick={() => setMenuOpen(false)} className="block hover:text-blue-500">Feedback</a>
           <a href="/app/blog" className="hover:text-blue-500">Blog</a> {/* ✅ Fixed */}
           <a href="#FAQ" onClick={() => setMenuOpen(false)} className="block hover:text-blue-500">FAQ</a>
