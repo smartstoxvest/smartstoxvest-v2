@@ -77,6 +77,17 @@ export default function Landing() {
             📉 Long-Term Risk
           </Link>
         </div>
+        {/* ✅ Small announcement chip */}
+		<p className="mt-3 text-xs text-gray-600">
+			New:{" "}
+			<a
+			href="/app/partnership"
+			className="underline decoration-[#FF7200] underline-offset-4"
+			>
+			SmartStoxVest × Seeking Alpha
+			</a>
+			<span className="ml-2 inline-block h-2 w-2 bg-[#FF7200] rounded-full animate-pulse align-middle" />
+		</p>
       </section>
 
       {/* 🎯 Mission */}
