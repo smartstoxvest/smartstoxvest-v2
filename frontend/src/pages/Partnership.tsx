@@ -71,7 +71,7 @@ export default function Partnership() {
             <ProductCard
               title="Seeking Alpha PRO"
               desc="Institutional-grade insights and exclusive research for professionals."
-              
+              href={withUtm("https://link.seekingalpha.com/49SKCM6/4JZKZP/", "card_bundle")}
               cta="Learn About PRO"
               outline
             />
@@ -131,3 +131,4 @@ function ProductCard({
     </div>
   );
 }
+
