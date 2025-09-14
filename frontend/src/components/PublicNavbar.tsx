@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
-import { Browser } from "@capacitor/browser";
+//import { Browser } from "@capacitor/browser";
 
 export default function PublicNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
