@@ -3,9 +3,6 @@ import React from "react";
 const withUtm = (base: string, source: string) =>
   `${base}?utm_source=smartstoxvest&utm_medium=site&utm_campaign=sa_affiliate&utm_content=${encodeURIComponent(source)}`;
 
-// ✅ Use Vite base so public assets resolve under any subpath
-const PUBLIC_BASE = import.meta.env.BASE_URL || "/";
-
 export default function Partnership() {
   return (
     <main className="min-h-screen bg-white">
@@ -131,4 +128,5 @@ function ProductCard({
     </div>
   );
 }
+
 
