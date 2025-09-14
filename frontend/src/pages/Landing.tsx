@@ -81,7 +81,7 @@ export default function Landing() {
 		<p className="mt-3 text-xs text-gray-600">
 			New:{" "}
 			<a
-			href="/app/partnership"
+			href="/partnership"
 			className="underline decoration-[#FF7200] underline-offset-4"
 			>
 			SmartStoxVest × Seeking Alpha
