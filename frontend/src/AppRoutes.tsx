@@ -14,6 +14,7 @@ import NewPost from "@/pages/NewPost";
 import EditPost from "@/pages/EditPost";
 import BlogList from "@/pages/BlogList";
 import AdminLogin from "@/pages/AdminLogin";
+import Partnership from "@/pages/Partnership";
 
 // Layout
 import TopNavLayout from "@/Layouts/TopNavLayout";
@@ -81,6 +82,7 @@ const AppRoutes = () => {
         <Route path="/app/admin/new" element={<TopNavLayout><NewPost /></TopNavLayout>} />
         <Route path="/app/admin/edit/:slug" element={<TopNavLayout><EditPost /></TopNavLayout>} />
         <Route path="/app/admin/blogs" element={<TopNavLayout><BlogList /></TopNavLayout>} />
+        <Route path="/partnership" element={<Partnership />} />
 
         {/* 🔁 Fallback */}
         <Route path="*" element={<Navigate to="/" />} />
