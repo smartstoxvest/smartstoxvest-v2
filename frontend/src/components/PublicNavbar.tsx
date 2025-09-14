@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
-//import { Browser } from "@capacitor/browser";
+// NOTE: Do NOT import "@capacitor/browser" for web builds
 
 export default function PublicNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -12,12 +12,26 @@ export default function PublicNavbar() {
 
   const isNative = Capacitor.isNativePlatform();
 
-  // ✅ User Manual opener
+  // ✅ User Manual opener (web-safe + native-capable without static Browser import)
   const openUserManual = async () => {
     const url = "https://smartstoxvest.com/SmartStoxVest_User_Manual.pdf";
-    if (isNative) {
-      await Browser.open({ url });
-    } else {
+
+    // Web (Netlify): open a new tab
+    if (!isNative) {
+      window.open(url, "_blank", "noopener");
+      return;
+    }
+
+    // Native: try the Browser plugin at runtime if available; fallback to window.open
+    try {
+      const anyWindow = window as any;
+      const Browser = anyWindow?.Capacitor?.Plugins?.Browser;
+      if (Browser?.open) {
+        await Browser.open({ url });
+      } else {
+        window.open(url, "_blank", "noopener");
+      }
+    } catch {
       window.open(url, "_blank", "noopener");
     }
   };
