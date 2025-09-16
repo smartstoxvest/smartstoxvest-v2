@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 
-interface User { email: string; }
-interface AuthContextType { user: User | null; }
 const API_URL = import.meta.env.VITE_API_URL;
 
-interface BlogPost {
+type BlogPost = {
   id: number;
   title: string;
   slug: string;
@@ -18,17 +15,14 @@ interface BlogPost {
   content: string;
   image_url?: string;
   created_at: string;
-}
+};
 
 type Status = "loading" | "success" | "empty" | "error";
 
-const BlogList = () => {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+export default function BlogPublic() {
+  const [posts, setPosts] = useState<BlogPost[] | null>(null); // null = loading
   const [status, setStatus] = useState<Status>("loading");
   const [err, setErr] = useState<string | null>(null);
-
-  const { user } = useAuth() as AuthContextType;
-  const isAdmin = user?.email === import.meta.env.VITE_ADMIN_EMAIL;
 
   async function fetchWithRetry(tries = 3, backoffMs = 600) {
     let lastErr: unknown = null;
@@ -42,7 +36,7 @@ const BlogList = () => {
         return;
       } catch (e) {
         lastErr = e;
-        await new Promise(r => setTimeout(r, backoffMs * Math.pow(2, i))); // 0.6s, 1.2s, 2.4s
+        await new Promise(r => setTimeout(r, backoffMs * Math.pow(2, i))); // 0.6s → 1.2s → 2.4s
       }
     }
     setErr(String(lastErr));
@@ -51,25 +45,15 @@ const BlogList = () => {
 
   useEffect(() => {
     fetchWithRetry();
-    // optional: warm the backend quickly so next navigations are snappy
+    // Warm the backend to reduce first-load lag (Render cold start).
     fetch(`${API_URL}/healthz`).catch(() => {});
   }, []);
 
-  // If your router uses <BrowserRouter basename="/app">, DO NOT prefix Links with "/app".
-  const urlToPost = (slug: string) => `/blog/${slug}`;
-  const urlToEdit = (slug: string) => `/admin/edit/${slug}`;
-
-  if (!isAdmin) {
+  // 👇 Render states
+  if (status === "loading" || posts === null) {
     return (
-      <div className="p-6 text-center text-red-600 font-semibold">
-        ⛔ You are not authorized to view the blog list.
-      </div>
-    );
-  }
-
-  if (status === "loading") {
-    return (
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="max-w-5xl mx-auto px-6 py-16">
+        <h1 className="text-3xl font-bold mb-6">SmartStoxVest Blog</h1>
         <div className="animate-pulse space-y-4">
           <div className="h-6 w-64 bg-gray-200 rounded" />
           <div className="h-4 w-96 bg-gray-200 rounded" />
@@ -81,7 +65,7 @@ const BlogList = () => {
 
   if (status === "error") {
     return (
-      <div className="max-w-5xl mx-auto px-6 py-8 text-center">
+      <div className="max-w-5xl mx-auto px-6 py-16 text-center">
         <p className="text-red-600 font-medium">Couldn’t load posts.</p>
         <button onClick={() => fetchWithRetry()} className="mt-3 px-4 py-2 rounded bg-blue-600 text-white">
           Retry
@@ -93,56 +77,41 @@ const BlogList = () => {
 
   if (status === "empty") {
     return (
-      <div className="max-w-5xl mx-auto px-6 py-8 text-center text-gray-700">
-        No blog posts yet.
+      <div className="max-w-5xl mx-auto px-6 py-16 text-center text-gray-700">
+        <h1 className="text-3xl font-bold mb-4">SmartStoxVest Blog</h1>
+        No posts yet.
       </div>
     );
   }
 
+  // success
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8 text-gray-800">
-      <div className="flex items-center space-x-2 mb-6">
-        <span className="text-3xl">📚</span>
-        <h1 className="text-2xl font-bold">All Blog Posts</h1>
-      </div>
-
+    <div className="max-w-5xl mx-auto px-6 py-10 text-gray-800">
+      <h1 className="text-3xl font-bold mb-6">SmartStoxVest Blog</h1>
       {posts.map((post) => (
-        <div key={post.id} className="mb-8 border-b pb-6">
+        <article key={post.id} className="mb-10 border-b pb-6">
           <h2 className="text-xl font-semibold mb-1">
-            <Link to={urlToPost(post.slug)} className="text-blue-600 hover:underline">
+            <Link to={`/blog/${post.slug}`} className="text-blue-600 hover:underline">
               {post.title}
             </Link>
           </h2>
-
-          <p className="text-sm text-gray-500 mb-1">
-            {new Date(post.created_at).toLocaleDateString()} | Tags:{" "}
-            {post.tags?.split(",").map((tag) => (
-              <span key={tag} className="text-blue-500 mr-2">#{tag.trim()}</span>
+          <p className="text-sm text-gray-500 mb-2">
+            {new Date(post.created_at).toLocaleDateString()} •{" "}
+            {post.tags?.split(",").map((t) => (
+              <span key={t} className="text-blue-500 mr-2">#{t.trim()}</span>
             ))}
           </p>
-
-          {post.image_url && (
-            <img src={post.image_url} alt={post.title} className="my-3 rounded-md shadow-md max-w-md" />
-          )}
-
+          {post.image_url && <img src={post.image_url} alt={post.title} className="my-3 rounded-md shadow-md max-w-md" />}
           <div className="text-sm prose max-w-none text-gray-700">
             <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
               {post.content.slice(0, 200) + "..."}
             </ReactMarkdown>
           </div>
-
-          <div className="flex justify-between items-center mt-3">
-            <Link to={urlToPost(post.slug)} className="text-blue-500 hover:underline text-sm">
-              👉 Read Full Post
-            </Link>
-            <Link to={urlToEdit(post.slug)} className="text-sm text-green-600 hover:underline">
-              ✏️ Edit Post
-            </Link>
-          </div>
-        </div>
+          <Link to={`/blog/${post.slug}`} className="mt-3 inline-block text-blue-600 hover:underline text-sm">
+            👉 Read Full Post
+          </Link>
+        </article>
       ))}
     </div>
   );
-};
-
-export default BlogList;
+}
