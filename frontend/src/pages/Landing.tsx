@@ -95,7 +95,7 @@ export default function Landing() {
           <LatestInsights limit={3} />
           <div className="mt-6 text-center">
             <Link
-              to="/blog"
+              to="/app/blog"
               className="inline-block text-indigo-600 hover:text-indigo-700 text-sm font-medium"
               aria-label="View all blog posts"
             >

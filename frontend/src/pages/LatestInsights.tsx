@@ -79,7 +79,7 @@ export default function LatestInsights({ limit = 3, className = "" }: LatestInsi
                 className="group overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 hover:shadow-md transition"
               >
                 {cover ? (
-                  <Link to={`/blog/${p.slug}`} className="block aspect-[16/9] overflow-hidden">
+                  <Link to={`/app/blog/${p.slug}`} className="block aspect-[16/9] overflow-hidden">
                     <img
                       src={cover}
                       alt={p.title}
@@ -90,7 +90,7 @@ export default function LatestInsights({ limit = 3, className = "" }: LatestInsi
                 ) : null}
 
                 <div className="p-4 md:p-5">
-                  <Link to={`/blog/${p.slug}`}>
+                  <Link to={`/app/blog/${p.slug}`}>
                     <h3 className="text-lg font-semibold leading-snug line-clamp-2">
                       {p.title}
                     </h3>
@@ -103,7 +103,7 @@ export default function LatestInsights({ limit = 3, className = "" }: LatestInsi
                     {p.excerpt || "Tap to read the full breakdown."}
                   </p>
                   <Link
-                    to={`/blog/${p.slug}`}
+                    to={`/app/blog/${p.slug}`}
                     className="mt-4 inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700"
                     aria-label={`Read ${p.title}`}
                   >
