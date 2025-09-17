@@ -171,4 +171,3 @@ export default function BlogPublic() {
     </div>
   );
 }
-export default BlogList;
