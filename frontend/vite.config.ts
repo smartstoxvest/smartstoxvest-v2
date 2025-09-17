@@ -39,10 +39,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'), // ✨ Cleaner imports using '@'
     },
   },
-  server: {
-    fs: {
-      strict: true,
-      allow: ['src'], // 🔒 Prevents access to unintended file paths
-    },
-  },
+ // server: {
+   // fs: {
+     // strict: true,
+     // allow: ['src'], // 🔒 Prevents access to unintended file paths
+   // },
+ // },
 });
