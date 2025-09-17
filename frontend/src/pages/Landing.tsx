@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import PublicNavbar from "@/components/PublicNavbar";
+import LatestInsights from "./LatestInsights"; // ⬅️ NEW: homepage blog cards
 
 const GA_ID = import.meta.env.VITE_GA_ID;
 
@@ -77,17 +78,31 @@ export default function Landing() {
             📉 Long-Term Risk
           </Link>
         </div>
+
         {/* ✅ Small announcement chip */}
-		<p className="mt-3 text-xs text-gray-600">
-			New:{" "}
-			<a
-			href="/partnership"
-			className="underline decoration-[#FF7200] underline-offset-4"
-			>
-			SmartStoxVest × Seeking Alpha
-			</a>
-			<span className="ml-2 inline-block h-2 w-2 bg-[#FF7200] rounded-full animate-pulse align-middle" />
-		</p>
+        <p className="mt-3 text-xs text-gray-600">
+          New:{" "}
+          <a href="/partnership" className="underline decoration-[#FF7200] underline-offset-4">
+            SmartStoxVest × Seeking Alpha
+          </a>
+          <span className="ml-2 inline-block h-2 w-2 bg-[#FF7200] rounded-full animate-pulse align-middle" />
+        </p>
+      </section>
+
+      {/* 📰 Latest Insights (auto-updates from /api/posts/recent) */}
+      <section className="py-12 bg-white">
+        <div className="max-w-6xl mx-auto px-4">
+          <LatestInsights limit={3} />
+          <div className="mt-6 text-center">
+            <Link
+              to="/blog"
+              className="inline-block text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+              aria-label="View all blog posts"
+            >
+              View all insights →
+            </Link>
+          </div>
+        </div>
       </section>
 
       {/* 🎯 Mission */}
@@ -189,10 +204,10 @@ export default function Landing() {
           📣 <strong>Share SmartStoxVest</strong> with your network
         </p>
         <div className="flex justify-center gap-4 text-2xl mb-4">
-          <a href="https://linkedin.com" target="_blank">🔗</a>
-          <a href="https://x.com" target="_blank">𝕏</a>
-          <a href="https://facebook.com" target="_blank">📘</a>
-          <a href="https://whatsapp.com" target="_blank">🟢</a>
+          <a href="https://linkedin.com" target="_blank" rel="noreferrer">🔗</a>
+          <a href="https://x.com" target="_blank" rel="noreferrer">𝕏</a>
+          <a href="https://facebook.com" target="_blank" rel="noreferrer">📘</a>
+          <a href="https://whatsapp.com" target="_blank" rel="noreferrer">🟢</a>
         </div>
         <p className="text-xs leading-5">
           © {new Date().getFullYear()} SmartStoxVest. Made with ❤️ for investors. | <a href="/privacy" className="underline">Privacy Policy</a><br />

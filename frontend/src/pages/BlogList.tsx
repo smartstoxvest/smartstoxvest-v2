@@ -1,63 +1,59 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeRaw from "rehype-raw";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-type BlogPost = {
+// ⚙️ Align with backend payload
+type BlogPostCard = {
   id: number;
   title: string;
   slug: string;
   tags: string;
-  author: string;
-  content: string;
-  image_url?: string;
-  created_at: string;
+  author?: string | null;
+  // New fields
+  excerpt?: string | null;
+  cover_image_url?: string | null;
+  image_url?: string | null; // legacy fallback
+  published_at?: string | null;
+  created_at?: string | null; // still present in DB
 };
+
 type Status = "loading" | "success" | "empty" | "error";
 
 export default function BlogPublic() {
-  const [posts, setPosts] = useState<BlogPost[] | null>(null);
+  const [posts, setPosts] = useState<BlogPostCard[] | null>(null);
   const [status, setStatus] = useState<Status>("loading");
   const [err, setErr] = useState<string | null>(null);
   const mounted = useRef(true);
 
-  async function sleep(ms: number) {
-    return new Promise((r) => setTimeout(r, ms));
-  }
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
   async function fetchUntilReady({
     maxErrorRetries = 3,
-    maxEmptyRetries = 2,          // 👈 try again if [] comes back
-    minLoadingMs = 700,           // 👈 avoid UI flicker
+    maxEmptyRetries = 2,
+    minLoadingMs = 700,
   } = {}) {
     const start = performance.now();
     let lastErr: unknown = null;
 
-    // warm backend in parallel (ignore errors)
+    // Warm backend (ignore errors)
     fetch(`${API_URL}/healthz`).catch(() => {});
 
-    // error retries
     for (let i = 0; i < maxErrorRetries; i++) {
       try {
-        const res = await fetch(`${API_URL}/api/posts?_=${Date.now()}`, {
-          cache: "no-store",
-        });
+        const url = `${API_URL}/api/posts?published_only=true&_=${Date.now()}`;
+        const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data: BlogPost[] = await res.json();
+        const data: BlogPostCard[] = await res.json();
 
-        // empty retries (fast backoff)
-        if (data.length === 0) {
+        // Empty retries
+        if (!data || data.length === 0) {
           for (let j = 0; j < maxEmptyRetries; j++) {
-            await sleep(500 * (j + 1)); // 0.5s → 1.0s
-            const res2 = await fetch(`${API_URL}/api/posts?_=${Date.now()}`, {
-              cache: "no-store",
-            });
+            await sleep(500 * (j + 1));
+            const res2 = await fetch(url, { cache: "no-store" });
             if (!res2.ok) throw new Error(`HTTP ${res2.status}`);
-            const data2: BlogPost[] = await res2.json();
-            if (data2.length > 0) {
+            const data2: BlogPostCard[] = await res2.json();
+            if (data2 && data2.length > 0) {
               const elapsed = performance.now() - start;
               if (elapsed < minLoadingMs) await sleep(minLoadingMs - elapsed);
               if (!mounted.current) return;
@@ -66,7 +62,6 @@ export default function BlogPublic() {
               return;
             }
           }
-          // still empty after retries → declare empty
           const elapsed = performance.now() - start;
           if (elapsed < minLoadingMs) await sleep(minLoadingMs - elapsed);
           if (!mounted.current) return;
@@ -75,7 +70,7 @@ export default function BlogPublic() {
           return;
         }
 
-        // success with data
+        // Success
         const elapsed = performance.now() - start;
         if (elapsed < minLoadingMs) await sleep(minLoadingMs - elapsed);
         if (!mounted.current) return;
@@ -100,7 +95,7 @@ export default function BlogPublic() {
     };
   }, []);
 
-  // RENDER STATES
+  // ---- RENDER STATES ----
   if (status === "loading" || posts === null) {
     return (
       <div className="max-w-5xl mx-auto px-6 py-16">
@@ -138,36 +133,65 @@ export default function BlogPublic() {
     );
   }
 
-  // success
+  // ---- SUCCESS ----
   return (
     <div className="max-w-5xl mx-auto px-6 py-10 text-gray-800">
       <h1 className="text-3xl font-bold mb-6">SmartStoxVest Blog</h1>
-      {posts.map((post) => (
-        <article key={post.id} className="mb-10 border-b pb-6">
-          <h2 className="text-xl font-semibold mb-1">
-            <Link to={`/blog/${post.slug}`} className="text-blue-600 hover:underline">
-              {post.title}
+
+      {posts.map((post) => {
+        const cover = post.cover_image_url || post.image_url || undefined;
+        const dateISO = post.published_at || post.created_at || "";
+        const prettyDate = dateISO
+          ? new Date(dateISO).toLocaleDateString(undefined, {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })
+          : "";
+
+        return (
+          <article key={post.id} className="mb-10 border-b pb-6">
+            <h2 className="text-xl font-semibold mb-1">
+              <Link to={`/blog/${post.slug}`} className="text-blue-600 hover:underline">
+                {post.title}
+              </Link>
+            </h2>
+
+            <p className="text-sm text-gray-500 mb-2">
+              {prettyDate}
+              {post.tags &&
+                " • " +
+                  post.tags
+                    .split(",")
+                    .map((t) => `#${t.trim()}`)
+                    .join(" ")}
+            </p>
+
+            {cover && (
+              <Link to={`/blog/${post.slug}`}>
+                <img
+                  src={cover}
+                  alt={post.title}
+                  className="my-3 rounded-md shadow-md max-w-md"
+                  loading="lazy"
+                />
+              </Link>
+            )}
+
+            {/* Use excerpt for speed + UX */}
+            <p className="text-sm text-gray-700">
+              {(post.excerpt && post.excerpt.trim()) || "Tap to read the full post."}
+            </p>
+
+            <Link
+              to={`/blog/${post.slug}`}
+              className="mt-3 inline-block text-blue-600 hover:underline text-sm"
+            >
+              👉 Read Full Post
             </Link>
-          </h2>
-          <p className="text-sm text-gray-500 mb-2">
-            {new Date(post.created_at).toLocaleDateString()} •{" "}
-            {post.tags?.split(",").map((t) => (
-              <span key={t} className="text-blue-500 mr-2">#{t.trim()}</span>
-            ))}
-          </p>
-          {post.image_url && (
-            <img src={post.image_url} alt={post.title} className="my-3 rounded-md shadow-md max-w-md" />
-          )}
-          <div className="text-sm prose max-w-none text-gray-700">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-              {post.content.slice(0, 200) + "..."}
-            </ReactMarkdown>
-          </div>
-          <Link to={`/blog/${post.slug}`} className="mt-3 inline-block text-blue-600 hover:underline text-sm">
-            👉 Read Full Post
-          </Link>
-        </article>
-      ))}
+          </article>
+        );
+      })}
     </div>
   );
 }
