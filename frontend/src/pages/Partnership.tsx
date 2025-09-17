@@ -8,7 +8,7 @@ const withUtm = (base: string, source: string) =>
 
 const PUBLIC_BASE = import.meta.env.BASE_URL || "/";
 
-// Motion presets
+/* ---------- Motion presets ---------- */
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0 },
@@ -23,72 +23,86 @@ const liftOnHover = {
 export default function Partnership() {
   return (
     <main className="min-h-screen bg-white">
-      {/* =====================  Top bar with logos (animated gradient)  ===================== */}
-      <section
-        className="relative overflow-hidden"
-        style={{ background: "#414A5F" }}
-      >
-        {/* Animated gradient sheen */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="w-[200%] h-full -skew-x-12 animate-[pan_10s_linear_infinite] bg-[radial-gradient(60%_120%_at_0%_0%,#FFF5E8_0%,transparent_50%),radial-gradient(60%_120%_at_100%_100%,#FEC20F_0%,transparent_50%)]" />
-        </div>
+      {/* =====================  Professional top hero  ===================== */}
+      <section className="relative overflow-hidden bg-[#0f1623] text-[#FFF5E8]">
+        {/* soft gradient halo */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-70"
+          style={{
+            background:
+              "radial-gradient(80rem 40rem at 50% -20%, rgba(59,130,246,0.18), transparent 60%), radial-gradient(40rem 20rem at 90% 0%, rgba(255,165,0,0.12), transparent 60%)",
+          }}
+        />
+        <div className="relative max-w-6xl mx-auto px-4 pt-8 pb-6 md:pt-10 md:pb-8">
+          {/* Logos + badge centered row */}
+          <div className="flex items-center justify-center gap-4 md:gap-6">
+            {/* SmartStoxVest brand */}
+            <motion.div {...fadeUp(0)} className="flex items-center gap-3">
+              <img
+                src={`${PUBLIC_BASE}logo.png`}
+                alt="SmartStoxVest"
+                className="h-10 w-10 rounded-xl ring-1 ring-white/15 bg-white/5 p-1 object-contain"
+              />
+              <span className="text-xl md:text-2xl font-extrabold tracking-tight">
+                Smart<span className="text-[#60a5fa]">Stox</span>Vest
+              </span>
+            </motion.div>
 
-        <div className="relative max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-		
-          <motion.img
-            {...fadeUp(0)}
-            src={`${PUBLIC_BASE}logo.png`}
-            alt="SmartStoxVest"
-            className="h-7 w-auto"
-          />
-          <div className="flex items-center gap-3">
-            <motion.span
-              {...fadeUp(0.05)}
-              className="text-[10px] md:text-xs px-2 py-1 rounded-full bg-[#FFF5E8] text-[#414A5F] font-semibold flex items-center gap-1"
-            >
-              <span className="inline-block h-2 w-2 bg-[#FF7200] rounded-full animate-pulse" />
-              New Partnership
-            </motion.span>
-            <motion.img
-              {...fadeUp(0.1)}
-              src={`${PUBLIC_BASE}Seeking_Alpha.png`}
-              alt="Seeking Alpha"
-              className="h-6 w-auto opacity-90"
-            />
+            {/* Divider + New Partnership pill */}
+            <motion.div {...fadeUp(0.05)} className="flex items-center gap-3">
+              <span className="text-slate-400">×</span>
+              <span className="inline-flex items-center gap-2 rounded-full bg-amber-100/90 px-3 py-1 text-[13px] font-semibold text-amber-900 ring-1 ring-amber-300/70 shadow-sm">
+                <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                New Partnership
+              </span>
+            </motion.div>
+
+            {/* Seeking Alpha brand */}
+            <motion.div {...fadeUp(0.1)} className="flex items-center gap-3">
+              <img
+                src={`${PUBLIC_BASE}Seeking_Alpha.png`}
+                alt="Seeking Alpha"
+                className="h-10 w-10 rounded-xl ring-1 ring-white/15 bg-white p-1 object-contain"
+              />
+              <span className="text-xl md:text-2xl font-extrabold tracking-tight">
+                <span className="text-[#ff6a00]">Seeking</span> Alpha
+              </span>
+            </motion.div>
           </div>
-        </div>
-      </section>
 
-      {/* =====================  Hero  ===================== */}
-      <section className="bg-[#0f1623] text-[#FFF5E8]">
-        <div className="max-w-6xl mx-auto px-4 py-10 md:py-14">
+          {/* Headline + copy + CTA */}
           <motion.h1
-            {...fadeUp(0)}
-            className="text-3xl md:text-4xl font-extrabold"
+            {...fadeUp(0.12)}
+            className="mt-6 text-center text-3xl md:text-4xl font-extrabold"
           >
-            SmartStoxVest × Seeking Alpha
+            SmartStoxVest <span className="text-slate-400">×</span>{" "}
+            <span className="text-[#ff6a00]">Seeking Alpha</span>
           </motion.h1>
+
           <motion.p
-            {...fadeUp(0.08)}
-            className="mt-3 max-w-2xl leading-7 opacity-95"
+            {...fadeUp(0.18)}
+            className="mt-3 text-center max-w-3xl mx-auto leading-7 opacity-95 text-[#FDEBD1]"
           >
             We’ve partnered to complement SmartStoxVest with unbiased research,
             quant-powered ratings, and curated stock ideas—tools that help
             investors validate decisions confidently.
           </motion.p>
 
-          <motion.a
-            {...fadeUp(0.16)}
-            href={withUtm(
-              "https://link.seekingalpha.com/49SKCM6/4G6SHH/",
-              "partnership_hero_premium"
-            )}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block mt-5 bg-[#FF7200] hover:bg-[#FEC20F] text-white font-semibold px-5 py-3 rounded-xl"
-          >
-            Explore Seeking Alpha Premium →
-          </motion.a>
+          <div className="flex items-center justify-center">
+            <motion.a
+              {...fadeUp(0.24)}
+              href={withUtm(
+                "https://link.seekingalpha.com/49SKCM6/4G6SHH/",
+                "partnership_hero_premium"
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-6 bg-[#FF7200] hover:bg-[#FEC20F] text-white font-semibold px-5 py-3 rounded-xl shadow-sm"
+            >
+              Explore Seeking Alpha Premium →
+            </motion.a>
+          </div>
         </div>
       </section>
 
@@ -196,6 +210,7 @@ export default function Partnership() {
   );
 }
 
+/* ---------- Cards ---------- */
 function ValueCard({
   title,
   desc,
@@ -259,13 +274,12 @@ function ProductCard({
   );
 }
 
-/* ========== Tiny CSS animation for the gradient ========== */
-/* Add this once in your global CSS (e.g., index.css or App.css):
+/* ========== Tiny CSS animation for the older gradient (optional) ==========
+   If you kept the animated sheen section from a previous version, add this:
 
 @keyframes pan {
   0%   { transform: translateX(-25%) skewX(-12deg); }
   50%  { transform: translateX(0%)    skewX(-12deg); }
   100% { transform: translateX(-25%)  skewX(-12deg); }
 }
-
 */
