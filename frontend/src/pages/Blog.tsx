@@ -25,7 +25,7 @@ const Blog = () => {
         );
         setPosts(sorted);
       })
-      .catch((err) => console.error("Failed to load posts:", err));
+      .catch((err) => console.error("Failed to load posts? Please refresh Page once:", err));
   }, []);
 
   return (

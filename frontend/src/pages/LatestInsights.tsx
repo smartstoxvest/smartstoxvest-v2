@@ -59,7 +59,7 @@ export default function LatestInsights({ limit = 3, className = "" }: LatestInsi
 
       {!loading && err && (
         <div className="rounded-xl bg-red-50 text-red-700 p-4 text-sm">
-          Couldn’t fetch posts: {err}
+           label {err}. Please refresh page once
         </div>
       )}
 
